@@ -1,0 +1,35 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - development
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Compilar y pasar tests (Java 21)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Copiar el repositorio
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      # 2. Configurar Java 21 con caché de Maven
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      # 3. Compilar y ejecutar tests con Maven
+      - name: Compilar y verificar tests
+        run: mvn --batch-mode --no-transfer-progress clean verify
