@@ -21,6 +21,7 @@ public class Incident {
     private String type;
     private int severity;
     private String description;
+    private IncidentStatus status;
 
     @Relationship(
             type = "OCCURRED_IN",
@@ -33,6 +34,11 @@ public class Incident {
         this.type = event.getType();
         this.severity = event.getSeverity();
         this.description = event.getDescription();
+        this.status = IncidentStatus.ACTIVE;
         this.zone = new Zone(event.getZone());
+    }
+
+    public boolean isClosed() {
+        return status == IncidentStatus.CLOSED;
     }
 }

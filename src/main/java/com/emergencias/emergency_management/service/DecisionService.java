@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +41,9 @@ public class DecisionService {
         List<ApplicableRuleRow> applicableRules =
                 decisionRuleRepository.findApplicableRules(incidentId);
 
-        if (applicableRules.isEmpty()) {
+        Optional<ApplicableRuleRow> rule = selectRule(applicableRules);
+
+        if (rule.isEmpty()) {
             log.warn(
                     "No hay reglas aplicables para el incidente {}",
                     incidentId);
@@ -56,21 +59,10 @@ public class DecisionService {
                     .build();
         }
 
-        ApplicableRuleRow selectedRule = applicableRules.stream()
-                .max(
-                        Comparator.comparingInt(
-                                        ApplicableRuleRow::priority)
-                                .thenComparing(
-                                        ApplicableRuleRow::ruleId))
-                .orElseThrow();
+        ApplicableRuleRow selectedRule = rule.get();
 
-        List<String> eligibleTypes = applicableRules.stream()
-                .filter(rule -> rule.ruleId()
-                        .equals(selectedRule.ruleId()))
-                .map(ApplicableRuleRow::resourceType)
-                .distinct()
-                .sorted()
-                .toList();
+        List<String> eligibleTypes =
+                resourceTypesOf(selectedRule, applicableRules);
 
         List<ResourceCandidateRow> candidates =
                 eligibleTypes.isEmpty()
@@ -135,5 +127,39 @@ public class DecisionService {
                 .ruleApplied(ruleDescription)
                 .recommendations(recommendations)
                 .build();
+    }
+
+    public List<String> eligibleResourceTypes(String incidentId) {
+
+        List<ApplicableRuleRow> applicableRules =
+                decisionRuleRepository.findApplicableRules(incidentId);
+
+        return selectRule(applicableRules)
+                .map(rule -> resourceTypesOf(rule, applicableRules))
+                .orElse(List.of());
+    }
+
+    private Optional<ApplicableRuleRow> selectRule(
+            List<ApplicableRuleRow> applicableRules) {
+
+        return applicableRules.stream()
+                .max(
+                        Comparator.comparingInt(
+                                        ApplicableRuleRow::priority)
+                                .thenComparing(
+                                        ApplicableRuleRow::ruleId));
+    }
+
+    private List<String> resourceTypesOf(
+            ApplicableRuleRow selectedRule,
+            List<ApplicableRuleRow> applicableRules) {
+
+        return applicableRules.stream()
+                .filter(rule -> rule.ruleId()
+                        .equals(selectedRule.ruleId()))
+                .map(ApplicableRuleRow::resourceType)
+                .distinct()
+                .sorted()
+                .toList();
     }
 }

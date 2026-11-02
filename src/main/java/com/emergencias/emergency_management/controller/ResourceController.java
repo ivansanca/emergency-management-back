@@ -6,18 +6,17 @@ import com.emergencias.emergency_management.service.ResourceService;
 
 import jakarta.validation.Valid;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/resources")
+@RequiredArgsConstructor
 public class ResourceController {
 
     private final ResourceService resourceService;
-
-    public ResourceController(ResourceService resourceService) {
-        this.resourceService = resourceService;
-    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

@@ -4,6 +4,7 @@ import com.emergencias.emergency_management.config.DecisionProperties;
 import com.emergencias.emergency_management.dto.DecisionResponse;
 import com.emergencias.emergency_management.dto.ResourceRecommendation;
 import com.emergencias.emergency_management.model.Incident;
+import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.repository.DecisionRuleRepository;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ResourceRepository;
@@ -62,7 +63,8 @@ class DecisionServiceTest {
     @Test
     void recommendReturnsEmptyRecommendationsWhenThereAreNoApplicableRules() {
         Incident incident = new Incident(
-                "incident-1", "FIRE", 3, "Description", null);
+                "incident-1", "FIRE", 3, "Description",
+                IncidentStatus.ACTIVE, null);
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(incident));
         when(decisionRuleRepository.findApplicableRules("incident-1"))
@@ -83,7 +85,8 @@ class DecisionServiceTest {
     @Test
     void recommendSelectsHighestPriorityRuleAndMapsResourceCandidates() {
         Incident incident = new Incident(
-                "incident-1", "FIRE", 3, "Description", null);
+                "incident-1", "FIRE", 3, "Description",
+                IncidentStatus.ACTIVE, null);
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(incident));
         when(decisionRuleRepository.findApplicableRules("incident-1"))

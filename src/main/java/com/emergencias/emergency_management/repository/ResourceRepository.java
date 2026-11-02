@@ -7,6 +7,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ResourceRepository
         extends Neo4jRepository<EmergencyResource, String> {
@@ -101,4 +102,16 @@ public interface ResourceRepository
             @Param("eligibleTypes") List<String> eligibleTypes,
             @Param("maxDistanceKm") double maxDistanceKm,
             @Param("maxTravelTimeMinutes") double maxTravelTimeMinutes);
+
+    @Query("""
+        MATCH (i:Incident {id: $incidentId})
+        MATCH (r:Resource {id: $resourceId})
+        WHERE r.available = true
+        SET r.available = false
+        CREATE (r)-[a:ASSIGNED_TO {assignedAt: datetime()}]->(i)
+        RETURN toString(a.assignedAt)
+        """)
+    Optional<String> assignToIncident(
+            @Param("resourceId") String resourceId,
+            @Param("incidentId") String incidentId);
 }

@@ -3,22 +3,26 @@ package com.emergencias.emergency_management.service;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentEvent;
 import com.emergencias.emergency_management.repository.IncidentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
+@RequiredArgsConstructor
 public class IncidentGraphService {
 
     private final IncidentRepository incidentRepository;
-
-    public IncidentGraphService(
-            IncidentRepository incidentRepository) {
-        this.incidentRepository = incidentRepository;
-    }
 
     public void save(IncidentEvent event) {
         validate(event);
 
         Incident incident = new Incident(event);
+
+        incidentRepository.findById(event.getId())
+                .map(Incident::getStatus)
+                .filter(Objects::nonNull)
+                .ifPresent(incident::setStatus);
 
         incidentRepository.save(incident);
     }
