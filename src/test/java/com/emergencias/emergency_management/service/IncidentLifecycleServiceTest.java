@@ -5,6 +5,7 @@ import com.emergencias.emergency_management.dto.CloseIncidentResponse;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentStatus;
+import com.emergencias.emergency_management.model.Zone;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ResourceRepository;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,8 @@ class IncidentLifecycleServiceTest {
 
     private static EmergencyResource resource(String type, boolean available) {
         return new EmergencyResource(
-                "resource-1", "Fire engine", type, available, "North");
+                "resource-1", "Fire engine", type, available,
+                new Zone("39022", "Cillorigo de Liébana", 43.17608, -4.60108));
     }
 
     @Test

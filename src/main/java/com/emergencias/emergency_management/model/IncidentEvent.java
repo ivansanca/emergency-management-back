@@ -26,7 +26,7 @@ public class IncidentEvent {
     private int severity;
 
     @NotBlank
-    private String zone;
+    private String zoneCode;
 
     private String description;
 
