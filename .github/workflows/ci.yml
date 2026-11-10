@@ -2,8 +2,9 @@ name: Build
 
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore: [main, development]
+  pull_request:
+    branches: [main, development]
 
 permissions:
   contents: read
