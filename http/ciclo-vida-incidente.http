@@ -1,0 +1,22 @@
+### Ciclo de vida de un incidente (sustituye los ids por los de tu grafo)
+
+### 1. Recomendación inicial
+GET http://localhost:8080/api/incidents/INCIDENT_ID/recommendations
+
+### 2. Asignar uno de los recursos recomendados
+POST http://localhost:8080/api/incidents/INCIDENT_ID/assignments
+Content-Type: application/json
+
+{ "resourceId": "RESOURCE_ID" }
+
+### 3. La recomendación ya no incluye el recurso asignado
+GET http://localhost:8080/api/incidents/INCIDENT_ID/recommendations
+
+### 4. Asignar el mismo recurso otra vez -> 409 Conflict
+POST http://localhost:8080/api/incidents/INCIDENT_ID/assignments
+Content-Type: application/json
+
+{ "resourceId": "RESOURCE_ID" }
+
+### 5. Cerrar el incidente -> libera sus recursos
+POST http://localhost:8080/api/incidents/INCIDENT_ID/close

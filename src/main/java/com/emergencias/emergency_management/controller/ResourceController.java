@@ -1,0 +1,28 @@
+package com.emergencias.emergency_management.controller;
+
+import com.emergencias.emergency_management.model.EmergencyResource;
+import com.emergencias.emergency_management.model.ResourceRequest;
+import com.emergencias.emergency_management.service.ResourceService;
+
+import jakarta.validation.Valid;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/resources")
+@RequiredArgsConstructor
+public class ResourceController {
+
+    private final ResourceService resourceService;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public EmergencyResource create(
+            @Valid @RequestBody ResourceRequest request) {
+
+        return resourceService.create(request);
+    }
+}
