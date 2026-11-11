@@ -14,7 +14,7 @@ public class ResourceRecommendation {
     private String type;
     private String reason;
     private String zoneName;
-    private double distanceKm;
-    private double travelTimeMinutes;
+    private Double distanceKm;
+    private Double travelTimeMinutes;
     private List<String> route;
 }

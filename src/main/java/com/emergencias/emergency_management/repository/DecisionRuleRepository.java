@@ -19,13 +19,15 @@ public interface DecisionRuleRepository
           AND i.severity >= rule.minSeverity
           AND i.severity <= rule.maxSeverity
 
-        MATCH (rule)-[:ALLOWS_RESOURCE_TYPE]->(rt:ResourceType)
+        MATCH (rule)-[allows:ALLOWS_RESOURCE_TYPE]->(rt:ResourceType)
 
         RETURN rule.id AS ruleId,
                rule.name AS ruleName,
                rule.description AS description,
                rule.priority AS priority,
-               rt.name AS resourceType
+               rt.name AS resourceType,
+               coalesce(allows.group, rt.name) AS requirementGroup,
+               coalesce(allows.quantity, 1) AS quantity
 
         ORDER BY rule.priority DESC, rule.id, rt.name
         """)

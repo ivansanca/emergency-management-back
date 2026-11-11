@@ -14,4 +14,5 @@ public class DecisionResponse {
     private int severity;
     private String ruleApplied;
     private List<ResourceRecommendation> recommendations;
+    private List<ResourceShortfall> shortfalls;
 }

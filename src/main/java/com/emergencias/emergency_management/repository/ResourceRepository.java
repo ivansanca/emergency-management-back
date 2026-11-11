@@ -20,9 +20,10 @@ public interface ResourceRepository
             
             WHERE r.available = true
               AND rt.name IN $eligibleTypes
+              AND coalesce(rt.aerial, false) = false
             
             OPTIONAL MATCH p =
-                (origin)-[:CONNECTS_TO*1..3]-(resourceZone)
+                (origin)-[:CONNECTS_TO*1..5]-(resourceZone)
             
             WITH r, origin, resourceZone, p,
                  CASE
@@ -102,6 +103,24 @@ public interface ResourceRepository
             @Param("eligibleTypes") List<String> eligibleTypes,
             @Param("maxDistanceKm") double maxDistanceKm,
             @Param("maxTravelTimeMinutes") double maxTravelTimeMinutes);
+
+    @Query("""
+        MATCH (r:Resource)-[:HAS_TYPE]->(rt:ResourceType)
+        MATCH (r)-[:LOCATED_IN]->(z:Zone)
+        WHERE r.available = true
+          AND rt.name IN $eligibleTypes
+          AND rt.aerial = true
+
+        RETURN r,
+               z.name AS zoneName,
+               null AS distanceKm,
+               null AS travelTimeMinutes,
+               [] AS route
+
+        ORDER BY r.name ASC
+        """)
+    List<ResourceCandidateRow> findAvailableAerialResources(
+            @Param("eligibleTypes") List<String> eligibleTypes);
 
     @Query("""
         MATCH (i:Incident {id: $incidentId})

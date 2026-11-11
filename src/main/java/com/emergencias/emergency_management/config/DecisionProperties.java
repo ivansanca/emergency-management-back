@@ -17,8 +17,8 @@ import org.springframework.validation.annotation.Validated;
 public class DecisionProperties {
 
     @Positive
-    private double maxDistanceKm = 20.0;
+    private double maxDistanceKm = 60.0;
 
     @Positive
-    private double maxTravelTimeMinutes = 45.0;
+    private double maxTravelTimeMinutes = 60.0;
 }

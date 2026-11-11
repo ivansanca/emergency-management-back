@@ -29,13 +29,13 @@ public class Incident {
     )
     private Zone zone;
 
-    public Incident(IncidentEvent event) {
+    public Incident(IncidentEvent event, Zone zone) {
         this.id = event.getId();
         this.type = event.getType();
         this.severity = event.getSeverity();
         this.description = event.getDescription();
         this.status = IncidentStatus.ACTIVE;
-        this.zone = new Zone(event.getZone());
+        this.zone = zone;
     }
 
     public boolean isClosed() {

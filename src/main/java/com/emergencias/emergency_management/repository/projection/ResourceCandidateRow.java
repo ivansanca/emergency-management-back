@@ -8,8 +8,8 @@ public record ResourceCandidateRow(
         String type,
         boolean available,
         String zoneName,
-        double distanceKm,
-        double travelTimeMinutes,
+        Double distanceKm,
+        Double travelTimeMinutes,
         List<String> route
 ) {
 }

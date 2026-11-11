@@ -5,6 +5,7 @@ import com.emergencias.emergency_management.dto.CloseIncidentResponse;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentStatus;
+import com.emergencias.emergency_management.model.Zone;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ResourceRepository;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,8 @@ class IncidentLifecycleServiceTest {
 
     private static EmergencyResource resource(String type, boolean available) {
         return new EmergencyResource(
-                "resource-1", "Fire engine", type, available, "North");
+                "resource-1", "Fire engine", type, available,
+                new Zone("39022", "Cillorigo de Liébana", 43.17608, -4.60108));
     }
 
     @Test
@@ -55,9 +57,9 @@ class IncidentLifecycleServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(incident(IncidentStatus.ACTIVE)));
         when(resourceRepository.findById("resource-1"))
-                .thenReturn(Optional.of(resource("FIRE_CREW", true)));
+                .thenReturn(Optional.of(resource("FOREST_ENGINE", true)));
         when(decisionService.eligibleResourceTypes("incident-1"))
-                .thenReturn(List.of("FIRE_CREW", "WATER_TENDER"));
+                .thenReturn(List.of("FOREST_ENGINE", "WATER_TENDER"));
         when(resourceRepository.assignToIncident("resource-1", "incident-1"))
                 .thenReturn(Optional.of("2026-10-31T17:00:00Z"));
 
@@ -66,7 +68,7 @@ class IncidentLifecycleServiceTest {
 
         assertEquals("incident-1", response.getIncidentId());
         assertEquals("resource-1", response.getResourceId());
-        assertEquals("FIRE_CREW", response.getResourceType());
+        assertEquals("FOREST_ENGINE", response.getResourceType());
         assertEquals("2026-10-31T17:00:00Z", response.getAssignedAt());
     }
 
@@ -90,7 +92,7 @@ class IncidentLifecycleServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(incident(IncidentStatus.ACTIVE)));
         when(resourceRepository.findById("resource-1"))
-                .thenReturn(Optional.of(resource("FIRE_CREW", false)));
+                .thenReturn(Optional.of(resource("FOREST_ENGINE", false)));
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
@@ -109,7 +111,7 @@ class IncidentLifecycleServiceTest {
         when(resourceRepository.findById("resource-1"))
                 .thenReturn(Optional.of(resource("AMBULANCE", true)));
         when(decisionService.eligibleResourceTypes("incident-1"))
-                .thenReturn(List.of("FIRE_CREW"));
+                .thenReturn(List.of("FOREST_ENGINE"));
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,

@@ -5,6 +5,8 @@ public record ApplicableRuleRow(
         String ruleName,
         String description,
         int priority,
-        String resourceType
+        String resourceType,
+        String requirementGroup,
+        int quantity
 ) {
 }

@@ -22,6 +22,6 @@ public class ResourceRequest {
     private boolean available;
 
     @NotBlank
-    private String zoneName;
+    private String zoneCode;
 
 }

@@ -1,0 +1,243 @@
+from_ine,from_name,to_ine,to_name,distance_km,travel_time_min
+39001,Alfoz de Lloredo,39024,Comillas,10.53,13.9
+39001,Alfoz de Lloredo,39041,Mazcuerras,12.8,19.7
+39001,Alfoz de Lloredo,39060,Reocín,12.02,15.5
+39001,Alfoz de Lloredo,39068,Ruiloba,8.01,11.2
+39001,Alfoz de Lloredo,39076,Santillana del Mar,8.25,12.7
+39001,Alfoz de Lloredo,39085,Suances,15.45,18.4
+39002,Ampuero,39023,Colindres,7.85,7.9
+39002,Ampuero,39038,Limpias,3.03,4.4
+39002,Ampuero,39058,Rasines,4.70,5.6
+39002,Ampuero,39102,Voto,10.77,12.4
+39003,Anievas,39004,Arenas de Iguña,4.59,5.8
+39003,Anievas,39018,Cartes,22.85,20.8
+39003,Anievas,39026,Corvera de Toranzo,12.18,14.1
+39004,Arenas de Iguña,39010,Bárcena de Pie de Concha,8.56,8.0
+39004,Arenas de Iguña,39021,Cieza,7.83,8.9
+39004,Arenas de Iguña,39025,Los Corrales de Buelna,10.72,12.5
+39004,Arenas de Iguña,39046,Molledo,5.10,6.0
+39004,Arenas de Iguña,39069,San Felices de Buelna,12.74,14.6
+39005,Argoños,39006,Arnuero,6.68,7.9
+39005,Argoños,39029,Escalante,3.30,4.8
+39005,Argoños,39043,Meruelo,7.69,10.4
+39005,Argoños,39047,Noja,6.50,7.6
+39005,Argoños,39079,Santoña,4.24,4.8
+39006,Arnuero,39011,Bareyo,4.43,6.1
+39006,Arnuero,39043,Meruelo,4.07,6.0
+39006,Arnuero,39047,Noja,5.90,7.3
+39007,Arredondo,39064,Riotuerto,21.28,24.3
+39007,Arredondo,39067,Ruesga,3.84,4.3
+39007,Arredondo,39083,Soba,20.71,23.2
+39008,El Astillero,39016,Camargo,5.87,9.0
+39008,El Astillero,39028,Entrambasaguas,14.50,13.4
+39008,El Astillero,39040,Marina de Cudeyo,10.71,12.5
+39008,El Astillero,39042,Medio Cudeyo,10.40,10.7
+39008,El Astillero,39048,Penagos,16.78,16.1
+39008,El Astillero,39052,Piélagos,14.03,13.5
+39008,El Astillero,39061,Ribamontán al Mar,22.89,22.2
+39008,El Astillero,39075,Santander,9.53,13.0
+39008,El Astillero,39099,Villaescusa,7.06,9.2
+39009,Bárcena de Cicero,39023,Colindres,7.52,9.9
+39009,Bárcena de Cicero,39029,Escalante,2.35,2.8
+39009,Bárcena de Cicero,39031,Hazas de Cesto,5.22,5.9
+39009,Bárcena de Cicero,39102,Voto,11.63,14.1
+39010,Bárcena de Pie de Concha,39046,Molledo,5.04,5.0
+39010,Bárcena de Pie de Concha,39051,Pesquera,7.35,7.3
+39010,Bárcena de Pie de Concha,39077,Santiurde de Reinosa,9.34,8.8
+39011,Bareyo,39043,Meruelo,5.21,7.8
+39011,Bareyo,39061,Ribamontán al Mar,7.96,9.8
+39012,Cabezón de la Sal,39041,Mazcuerras,7.61,9.9
+39012,Cabezón de la Sal,39060,Reocín,15.58,14.3
+39012,Cabezón de la Sal,39066,Ruente,7.8,11.2
+39012,Cabezón de la Sal,39068,Ruiloba,11.47,13.8
+39012,Cabezón de la Sal,39090,Udías,6.14,7.6
+39012,Cabezón de la Sal,39091,Valdáliga,11.98,11.5
+39013,Cabezón de Liébana,39022,Cillorigo de Liébana,6.58,7.5
+39013,Cabezón de Liébana,39050,Pesaguero,9.18,9.6
+39013,Cabezón de Liébana,39055,Potes,5.86,6.4
+39014,Cabuérniga,39063,Rionansa,15.57,15.0
+39014,Cabuérniga,39066,Ruente,4.75,5.8
+39014,Cabuérniga,39086,Los Tojos,9.22,12.1
+39015,Camaleño,39055,Potes,6.76,7.2
+39016,Camargo,39040,Marina de Cudeyo,14.20,15.5
+39016,Camargo,39042,Medio Cudeyo,13.90,13.7
+39016,Camargo,39044,Miengo,15.04,14.1
+39016,Camargo,39052,Piélagos,14.16,13.3
+39016,Camargo,39054,Polanco,17.47,13.7
+39016,Camargo,39073,Santa Cruz de Bezana,6.07,6.6
+39016,Camargo,39075,Santander,7.36,9.8
+39016,Camargo,39099,Villaescusa,7.97,10.4
+39017,Campoo de Yuso,39039,Luena,22.67,20.7
+39017,Campoo de Yuso,39059,Reinosa,12.58,13.6
+39017,Campoo de Yuso,39077,Santiurde de Reinosa,18.72,17.9
+39018,Cartes,39021,Cieza,15.35,14.7
+39018,Cartes,39025,Los Corrales de Buelna,8.51,12.7
+39018,Cartes,39060,Reocín,6.37,8.2
+39018,Cartes,39069,San Felices de Buelna,9.54,10.5
+39018,Cartes,39087,Torrelavega,3.57,5.2
+39019,Castañeda,39048,Penagos,15.31,11.9
+39019,Castañeda,39052,Piélagos,8.83,7.8
+39019,Castañeda,39054,Polanco,16.59,13.7
+39019,Castañeda,39056,Puente Viesgo,5.85,6.7
+39019,Castañeda,39060,Reocín,17.63,14.2
+39019,Castañeda,39074,Santa María de Cayón,7.29,10.3
+39019,Castañeda,39087,Torrelavega,13.06,12.5
+39020,Castro-Urdiales,39030,Guriezo,16.25,16.6
+39020,Castro-Urdiales,39035,Laredo,22.67,20.8
+39020,Castro-Urdiales,39036,Liendo,17.95,19
+39021,Cieza,39025,Los Corrales de Buelna,7.36,10.9
+39021,Cieza,39046,Molledo,11.47,11.1
+39021,Cieza,39069,San Felices de Buelna,9.38,13.0
+39022,Cillorigo de Liébana,39049,Peñarrubia,17.94,17.8
+39022,Cillorigo de Liébana,39055,Potes,3.39,5.0
+39023,Colindres,39030,Guriezo,18.17,14.1
+39023,Colindres,39031,Hazas de Cesto,12.79,9.7
+39023,Colindres,39035,Laredo,3.70,5.0
+39023,Colindres,39036,Liendo,7.93,8.8
+39023,Colindres,39038,Limpias,5.08,8.3
+39023,Colindres,39079,Santoña,11.78,13.4
+39023,Colindres,39102,Voto,8.31,10.2
+39024,Comillas,39068,Ruiloba,4.99,8.3
+39024,Comillas,39080,San Vicente de la Barquera,11.32,13.0
+39024,Comillas,39090,Udías,9.19,11.4
+39024,Comillas,39091,Valdáliga,11.34,16.2
+39025,Los Corrales de Buelna,39046,Molledo,14.39,14.3
+39025,Los Corrales de Buelna,39054,Polanco,19.05,17.2
+39025,Los Corrales de Buelna,39060,Reocín,14.54,15.9
+39025,Los Corrales de Buelna,39069,San Felices de Buelna,3.96,7.7
+39025,Los Corrales de Buelna,39087,Torrelavega,11.73,12.9
+39026,Corvera de Toranzo,39039,Luena,15.43,17.5
+39026,Corvera de Toranzo,39056,Puente Viesgo,11.46,10.9
+39026,Corvera de Toranzo,39069,San Felices de Buelna,18.03,17.7
+39026,Corvera de Toranzo,39071,San Pedro del Romeral,21.91,28.5
+39026,Corvera de Toranzo,39078,Santiurde de Toranzo,5.00,7.3
+39026,Corvera de Toranzo,39097,Vega de Pas,17.16,19.4
+39026,Corvera de Toranzo,39100,Villafufre,13.1,13.4
+39027,Campoo de Enmedio,39059,Reinosa,2.99,4.2
+39027,Campoo de Enmedio,39065,Las Rozas de Valdearroyo,14.12,19.7
+39027,Campoo de Enmedio,39077,Santiurde de Reinosa,12.83,10.9
+39027,Campoo de Enmedio,39092,Valdeolea,17.55,14.1
+39027,Campoo de Enmedio,39093,Valdeprado del Río,14.03,12.9
+39028,Entrambasaguas,39031,Hazas de Cesto,10.76,9.5
+39028,Entrambasaguas,39040,Marina de Cudeyo,9.68,13.3
+39028,Entrambasaguas,39042,Medio Cudeyo,6.11,8.3
+39028,Entrambasaguas,39061,Ribamontán al Mar,13.57,16.2
+39028,Entrambasaguas,39062,Ribamontán al Monte,5.14,7.2
+39028,Entrambasaguas,39064,Riotuerto,3.80,5.8
+39028,Entrambasaguas,39099,Villaescusa,17.86,16.2
+39029,Escalante,39043,Meruelo,7.34,11.5
+39029,Escalante,39079,Santoña,7.10,7.5
+39030,Guriezo,39035,Laredo,16.65,14.1
+39030,Guriezo,39036,Liendo,11.85,11.4
+39030,Guriezo,39101,Valle de Villaverde,15.99,15.3
+39031,Hazas de Cesto,39043,Meruelo,6.20,9.3
+39031,Hazas de Cesto,39047,Noja,10.71,14.6
+39031,Hazas de Cesto,39062,Ribamontán al Monte,8.07,10.9
+39031,Hazas de Cesto,39084,Solórzano,4.11,4.6
+39032,Hermandad de Campoo de Suso,39059,Reinosa,8.32,9.1
+39032,Hermandad de Campoo de Suso,39086,Los Tojos,29.10,33.6
+39033,Herrerías,39034,Lamasón,8.31,12.5
+39033,Herrerías,39063,Rionansa,10.17,10.9
+39033,Herrerías,39095,Val de San Vicente,11.48,11.5
+39034,Lamasón,39049,Peñarrubia,12.41,14.3
+39034,Lamasón,39063,Rionansa,11.88,14.2
+39035,Laredo,39036,Liendo,6.19,8.1
+39037,Liérganes,39042,Medio Cudeyo,5.56,8.2
+39037,Liérganes,39045,Miera,13.02,17.5
+39037,Liérganes,39048,Penagos,6.84,9.3
+39037,Liérganes,39064,Riotuerto,4.37,5.8
+39037,Liérganes,39072,San Roque de Riomiera,16.79,21.1
+39038,Limpias,39102,Voto,9.84,12.4
+39039,Luena,39071,San Pedro del Romeral,14.94,29.5
+39039,Luena,39097,Vega de Pas,20.73,20.9
+39040,Marina de Cudeyo,39042,Medio Cudeyo,6.05,9.5
+39040,Marina de Cudeyo,39048,Penagos,14.10,15.7
+39040,Marina de Cudeyo,39061,Ribamontán al Mar,13.76,18.1
+39040,Marina de Cudeyo,39062,Ribamontán al Monte,9.64,15.1
+39040,Marina de Cudeyo,39075,Santander,17.75,19.7
+39040,Marina de Cudeyo,39099,Villaescusa,13.68,14.3
+39041,Mazcuerras,39060,Reocín,14.69,14.2
+39041,Mazcuerras,39066,Ruente,6.88,9.2
+39041,Mazcuerras,39087,Torrelavega,17.22,16.3
+39042,Medio Cudeyo,39048,Penagos,8.51,10.2
+39042,Medio Cudeyo,39061,Ribamontán al Mar,13.34,17.7
+39042,Medio Cudeyo,39062,Ribamontán al Monte,10.74,11.5
+39042,Medio Cudeyo,39064,Riotuerto,4.51,7.0
+39042,Medio Cudeyo,39074,Santa María de Cayón,14.84,14.8
+39042,Medio Cudeyo,39084,Solórzano,17.49,15.4
+39042,Medio Cudeyo,39099,Villaescusa,13.86,13.3
+39043,Meruelo,39047,Noja,6.87,9.7
+39044,Miengo,39052,Piélagos,14.62,17.2
+39044,Miengo,39054,Polanco,7.31,9.4
+39044,Miengo,39073,Santa Cruz de Bezana,10.96,11.9
+39044,Miengo,39087,Torrelavega,12.05,14.2
+39045,Miera,39072,San Roque de Riomiera,10.21,13.5
+39048,Penagos,39062,Ribamontán al Monte,17.37,16.4
+39048,Penagos,39064,Riotuerto,10.28,11.4
+39048,Penagos,39074,Santa María de Cayón,6.23,8.7
+39048,Penagos,39099,Villaescusa,10.19,12.3
+39049,Peñarrubia,39088,Tresviso,67.96,86.5
+39050,Pesaguero,39053,Polaciones,26.93,30.3
+39051,Pesquera,39070,San Miguel de Aguayo,8.47,12.8
+39051,Pesquera,39077,Santiurde de Reinosa,3.33,4.5
+39052,Piélagos,39054,Polanco,15.36,13.0
+39052,Piélagos,39056,Puente Viesgo,8.23,8.2
+39052,Piélagos,39060,Reocín,16.40,13.5
+39052,Piélagos,39074,Santa María de Cayón,15.04,13.8
+39052,Piélagos,39085,Suances,20.10,20.6
+39052,Piélagos,39087,Torrelavega,11.83,11.8
+39052,Piélagos,39099,Villaescusa,12.07,11.7
+39053,Polaciones,39089,Tudanca,11.57,14.6
+39054,Polanco,39060,Reocín,10.89,10.7
+39054,Polanco,39073,Santa Cruz de Bezana,12.84,11.0
+39054,Polanco,39076,Santillana del Mar,12.43,14.9
+39054,Polanco,39085,Suances,10.80,13.1
+39054,Polanco,39087,Torrelavega,7.28,8.7
+39055,Potes,39096,Vega de Liébana,8.08,8.0
+39056,Puente Viesgo,39060,Reocín,17.19,15.1
+39056,Puente Viesgo,39069,San Felices de Buelna,10.01,11.8
+39056,Puente Viesgo,39074,Santa María de Cayón,12.11,13.1
+39056,Puente Viesgo,39078,Santiurde de Toranzo,9.19,13.1
+39056,Puente Viesgo,39087,Torrelavega,12.62,13.5
+39056,Puente Viesgo,39100,Villafufre,8.71,11.0
+39057,Ramales de la Victoria,39058,Rasines,6.92,6.3
+39057,Ramales de la Victoria,39067,Ruesga,8.76,10.2
+39057,Ramales de la Victoria,39083,Soba,13.06,16.0
+39057,Ramales de la Victoria,39101,Valle de Villaverde,25.29,23.4
+39059,Reinosa,39077,Santiurde de Reinosa,9.88,9.5
+39060,Reocín,39076,Santillana del Mar,6.58,10.5
+39060,Reocín,39085,Suances,11.39,13.5
+39060,Reocín,39087,Torrelavega,4.58,7.1
+39061,Ribamontán al Mar,39062,Ribamontán al Monte,9.80,13.6
+39062,Ribamontán al Monte,39084,Solórzano,9.63,10.5
+39063,Rionansa,39089,Tudanca,14.14,16.0
+39065,Las Rozas de Valdearroyo,39093,Valdeprado del Río,15.25,21.2
+39067,Ruesga,39084,Solórzano,21.57,24.1
+39068,Ruiloba,39076,Santillana del Mar,14.22,18.8
+39068,Ruiloba,39090,Udías,8.59,11.2
+39069,San Felices de Buelna,39078,Santiurde de Toranzo,16.27,19.0
+39069,San Felices de Buelna,39100,Villafufre,15.79,16.9
+39070,San Miguel de Aguayo,39077,Santiurde de Reinosa,9.76,13.8
+39071,San Pedro del Romeral,39097,Vega de Pas,12.42,18
+39072,San Roque de Riomiera,39082,Selaya,17.65,19.7
+39073,Santa Cruz de Bezana,39075,Santander,11.18,12.2
+39073,Santa Cruz de Bezana,39099,Villaescusa,11.31,11.0
+39074,Santa María de Cayón,39081,Saro,7.88,9.7
+39074,Santa María de Cayón,39099,Villaescusa,8.67,10.9
+39075,Santander,39099,Villaescusa,15.66,14.6
+39076,Santillana del Mar,39085,Suances,8.90,11.9
+39078,Santiurde de Toranzo,39100,Villafufre,7.98,11.5
+39079,Santoña,39102,Voto,14.48,17.0
+39080,San Vicente de la Barquera,39090,Udías,20.71,17.7
+39080,San Vicente de la Barquera,39091,Valdáliga,10.28,9.7
+39080,San Vicente de la Barquera,39095,Val de San Vicente,8.58,8.2
+39081,Saro,39098,Villacarriedo,6.81,8.9
+39081,Saro,39100,Villafufre,6.16,10.3
+39082,Selaya,39097,Vega de Pas,13.56,18.5
+39082,Selaya,39098,Villacarriedo,1.93,3.1
+39084,Solórzano,39102,Voto,11.70,13.3
+39085,Suances,39087,Torrelavega,10.12,14.2
+39090,Udías,39091,Valdáliga,15.61,15.2
+39092,Valdeolea,39093,Valdeprado del Río,12.15,11.3
+39093,Valdeprado del Río,39094,Valderredible,27.66,29.8
+39098,Villacarriedo,39100,Villafufre,10.62,13.0

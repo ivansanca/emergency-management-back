@@ -38,13 +38,13 @@ public class EmergencyResource {
             String name,
             String type,
             boolean available,
-            String zoneName) {
+            Zone zone) {
 
         this.id = id;
         this.name = name;
         this.type = type;
         this.available = available;
-        this.zone = new Zone(zoneName);
+        this.zone = zone;
         this.resourceType = new ResourceType(type);
     }
 }
