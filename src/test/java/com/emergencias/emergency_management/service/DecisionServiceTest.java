@@ -3,6 +3,7 @@ package com.emergencias.emergency_management.service;
 import com.emergencias.emergency_management.config.DecisionProperties;
 import com.emergencias.emergency_management.dto.DecisionResponse;
 import com.emergencias.emergency_management.dto.ResourceRecommendation;
+import com.emergencias.emergency_management.dto.ResourceShortfall;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.repository.DecisionRuleRepository;
@@ -47,6 +48,33 @@ class DecisionServiceTest {
     @InjectMocks
     private DecisionService decisionService;
 
+    private void givenIncident() {
+        Incident incident = new Incident(
+                "incident-1", "FOREST_FIRE", 2, "Description",
+                IncidentStatus.ACTIVE, null);
+        when(incidentRepository.findById("incident-1"))
+                .thenReturn(Optional.of(incident));
+    }
+
+    private void givenLimits() {
+        when(decisionProperties.getMaxDistanceKm()).thenReturn(60.0);
+        when(decisionProperties.getMaxTravelTimeMinutes()).thenReturn(60.0);
+    }
+
+    private static ApplicableRuleRow row(
+            String ruleId, int priority, String type, String group, int quantity) {
+        return new ApplicableRuleRow(
+                ruleId, "Rule " + ruleId, "Description.",
+                priority, type, group, quantity);
+    }
+
+    private static ResourceCandidateRow ground(
+            String id, String type, double km, double minutes) {
+        return new ResourceCandidateRow(
+                id, "Name " + id, type, true, "Zone " + id,
+                km, minutes, List.of("Origin", "Zone " + id));
+    }
+
     @Test
     void recommendThrowsNotFoundWhenIncidentDoesNotExist() {
         when(incidentRepository.findById("incident-1"))
@@ -62,92 +90,129 @@ class DecisionServiceTest {
 
     @Test
     void recommendReturnsEmptyRecommendationsWhenThereAreNoApplicableRules() {
-        Incident incident = new Incident(
-                "incident-1", "FIRE", 3, "Description",
-                IncidentStatus.ACTIVE, null);
-        when(incidentRepository.findById("incident-1"))
-                .thenReturn(Optional.of(incident));
+        givenIncident();
         when(decisionRuleRepository.findApplicableRules("incident-1"))
                 .thenReturn(List.of());
 
         DecisionResponse response = decisionService.recommend("incident-1");
 
         assertEquals("incident-1", response.getIncidentId());
-        assertEquals("FIRE", response.getIncidentType());
-        assertEquals(3, response.getSeverity());
+        assertEquals("FOREST_FIRE", response.getIncidentType());
+        assertEquals(2, response.getSeverity());
         assertEquals(
                 "No hay una regla activa para este tipo de incidente y gravedad.",
                 response.getRuleApplied());
         assertEquals(List.of(), response.getRecommendations());
+        assertEquals(List.of(), response.getShortfalls());
         verifyNoInteractions(resourceRepository, decisionProperties);
     }
 
     @Test
-    void recommendSelectsHighestPriorityRuleAndMapsResourceCandidates() {
-        Incident incident = new Incident(
-                "incident-1", "FIRE", 3, "Description",
-                IncidentStatus.ACTIVE, null);
-        when(incidentRepository.findById("incident-1"))
-                .thenReturn(Optional.of(incident));
+    void recommendUsesHighestPriorityRuleAndMapsGroundCandidates() {
+        givenIncident();
+        givenLimits();
         when(decisionRuleRepository.findApplicableRules("incident-1"))
                 .thenReturn(List.of(
-                        new ApplicableRuleRow(
-                                "rule-z", "Low priority", "Low", 1, "Truck"),
-                        new ApplicableRuleRow(
-                                "rule-a", "Other tie", "Other", 10, "Other"),
-                        new ApplicableRuleRow(
-                                "rule-b", "Selected rule", "Dispatch", 10, "Fire"),
-                        new ApplicableRuleRow(
-                                "rule-b", "Selected rule", "Dispatch", 10, "Ambulance"),
-                        new ApplicableRuleRow(
-                                "rule-b", "Selected rule", "Dispatch", 10, "Fire")));
-        when(decisionProperties.getMaxDistanceKm()).thenReturn(25.0);
-        when(decisionProperties.getMaxTravelTimeMinutes()).thenReturn(40.0);
+                        row("rule-z", 1, "TRUCK", "TRUCK", 1),
+                        row("rule-a", 10, "OTHER", "OTHER", 1),
+                        row("rule-b", 10, "RURAL_ENGINE", "RURAL_ENGINE", 1),
+                        row("rule-b", 10, "WATER_TENDER", "WATER_TENDER", 1)));
         when(resourceRepository.findAvailableForIncident(
-                "incident-1", List.of("Ambulance", "Fire"), 25.0, 40.0))
+                "incident-1", List.of("RURAL_ENGINE", "WATER_TENDER"), 60.0, 60.0))
                 .thenReturn(List.of(
-                        new ResourceCandidateRow(
-                                "resource-1",
-                                "Fire engine",
-                                "Fire",
-                                true,
-                                "North",
-                                5.2,
-                                12.0,
-                                List.of("Origin", "Junction", "North")),
-                        new ResourceCandidateRow(
-                                "resource-2",
-                                "Ambulance",
-                                "Ambulance",
-                                true,
-                                "South",
-                                2.0,
-                                6.0,
-                                null)));
+                        ground("BRP-21", "RURAL_ENGINE", 24.53, 28.5),
+                        ground("BCA-61", "WATER_TENDER", 40.549999999, 44.2)));
+        when(resourceRepository.findAvailableAerialResources(
+                List.of("RURAL_ENGINE", "WATER_TENDER")))
+                .thenReturn(List.of());
 
         DecisionResponse response = decisionService.recommend("incident-1");
 
         assertEquals(
-                "Selected rule: Dispatch Tipos admitidos: Ambulance, Fire",
+                "Rule rule-b: Description. Necesidades: "
+                        + "1 x RURAL_ENGINE, 1 x WATER_TENDER",
                 response.getRuleApplied());
         assertEquals(2, response.getRecommendations().size());
 
         ResourceRecommendation first = response.getRecommendations().get(0);
-        assertEquals("resource-1", first.getResourceId());
-        assertEquals("Fire engine", first.getName());
-        assertEquals(List.of("Origin", "Junction", "North"), first.getRoute());
+        assertEquals("BRP-21", first.getResourceId());
+        assertEquals(24.5, first.getDistanceKm());
         assertEquals(
-                "Ruta: Origin → Junction → North. Distancia estimada: 5.2 km. "
-                        + "Tiempo estimado: 12 min. Recurso disponible y compatible "
-                        + "con la regla Selected rule.",
+                "Ruta: Origin → Zone BRP-21. Distancia estimada: 24.5 km. "
+                        + "Tiempo estimado: 29 min. Recurso disponible y "
+                        + "compatible con la regla Rule rule-b.",
                 first.getReason());
 
         ResourceRecommendation second = response.getRecommendations().get(1);
-        assertEquals("resource-2", second.getResourceId());
-        assertNull(second.getRoute());
-        assertTrue(second.getReason().contains("Ruta: South."));
+        assertEquals(40.5, second.getDistanceKm());
+        assertEquals(List.of(), response.getShortfalls());
+    }
 
-        verify(resourceRepository).findAvailableForIncident(
-                "incident-1", List.of("Ambulance", "Fire"), 25.0, 40.0);
+    @Test
+    void recommendPicksNearestPerRequirementAndReportsShortfalls() {
+        givenIncident();
+        givenLimits();
+        when(decisionRuleRepository.findApplicableRules("incident-1"))
+                .thenReturn(List.of(
+                        row("rule-1", 100, "FOREST_ENGINE", "ENGINES", 2),
+                        row("rule-1", 100, "RURAL_ENGINE", "ENGINES", 2),
+                        row("rule-1", 100, "WATER_TENDER", "WATER_TENDER", 2)));
+        List<String> types =
+                List.of("FOREST_ENGINE", "RURAL_ENGINE", "WATER_TENDER");
+        when(resourceRepository.findAvailableForIncident(
+                "incident-1", types, 60.0, 60.0))
+                .thenReturn(List.of(
+                        ground("R1", "RURAL_ENGINE", 10, 10),
+                        ground("F1", "FOREST_ENGINE", 20, 20),
+                        ground("W1", "WATER_TENDER", 25, 25),
+                        ground("R2", "RURAL_ENGINE", 30, 30)));
+        when(resourceRepository.findAvailableAerialResources(types))
+                .thenReturn(List.of());
+
+        DecisionResponse response = decisionService.recommend("incident-1");
+
+        assertEquals(
+                List.of("R1", "F1", "W1"),
+                response.getRecommendations().stream()
+                        .map(ResourceRecommendation::getResourceId)
+                        .toList());
+
+        assertEquals(1, response.getShortfalls().size());
+        ResourceShortfall shortfall = response.getShortfalls().getFirst();
+        assertEquals("WATER_TENDER", shortfall.getRequirement());
+        assertEquals(2, shortfall.getRequested());
+        assertEquals(1, shortfall.getFound());
+        assertTrue(response.getRuleApplied().contains(
+                "2 x FOREST_ENGINE/RURAL_ENGINE"));
+    }
+
+    @Test
+    void recommendIncludesAerialResourcesWithoutRoute() {
+        givenIncident();
+        givenLimits();
+        when(decisionRuleRepository.findApplicableRules("incident-1"))
+                .thenReturn(List.of(
+                        row("rule-1", 100, "AERIAL_UNIT", "AERIAL_UNIT", 1)));
+        when(resourceRepository.findAvailableForIncident(
+                "incident-1", List.of("AERIAL_UNIT"), 60.0, 60.0))
+                .thenReturn(List.of());
+        when(resourceRepository.findAvailableAerialResources(
+                List.of("AERIAL_UNIT")))
+                .thenReturn(List.of(new ResourceCandidateRow(
+                        "DELTA-ROMEO", "Helicóptero del 112", "AERIAL_UNIT",
+                        true, "Santander", null, null, List.of())));
+
+        DecisionResponse response = decisionService.recommend("incident-1");
+
+        ResourceRecommendation helicopter =
+                response.getRecommendations().getFirst();
+        assertEquals("DELTA-ROMEO", helicopter.getResourceId());
+        assertNull(helicopter.getDistanceKm());
+        assertNull(helicopter.getTravelTimeMinutes());
+        assertTrue(helicopter.getReason().startsWith(
+                "Medio aéreo con base en Santander."));
+        assertEquals(List.of(), response.getShortfalls());
+        verify(resourceRepository).findAvailableAerialResources(
+                List.of("AERIAL_UNIT"));
     }
 }

@@ -45,10 +45,10 @@ class ResourceServiceTest {
         when(zoneRepository.findById("39022"))
                 .thenReturn(Optional.of(TAMA));
         ResourceRequest request = new ResourceRequest(
-                "BRP-41", "Autobomba de primera salida", "FIRE_CREW",
+                "BRP-41", "Autobomba de primera salida", "RURAL_ENGINE",
                 true, "39022");
         EmergencyResource persistedResource = new EmergencyResource(
-                "BRP-41", "Autobomba de primera salida", "FIRE_CREW",
+                "BRP-41", "Autobomba de primera salida", "RURAL_ENGINE",
                 true, TAMA);
         when(resourceRepository.save(any(EmergencyResource.class)))
                 .thenReturn(persistedResource);
@@ -61,7 +61,7 @@ class ResourceServiceTest {
         EmergencyResource savedResource = resourceCaptor.getValue();
         assertEquals("BRP-41", savedResource.getId());
         assertEquals("Autobomba de primera salida", savedResource.getName());
-        assertEquals("FIRE_CREW", savedResource.getType());
+        assertEquals("RURAL_ENGINE", savedResource.getType());
         assertTrue(savedResource.isAvailable());
         assertSame(TAMA, savedResource.getZone());
         assertSame(persistedResource, result);
@@ -72,7 +72,7 @@ class ResourceServiceTest {
         when(zoneRepository.findById("99999"))
                 .thenReturn(Optional.empty());
         ResourceRequest request = new ResourceRequest(
-                "BRP-41", "Autobomba de primera salida", "FIRE_CREW",
+                "BRP-41", "Autobomba de primera salida", "RURAL_ENGINE",
                 true, "99999");
 
         ResponseStatusException exception = assertThrows(

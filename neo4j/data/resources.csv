@@ -1,0 +1,97 @@
+station_id,station_name,operator,zone_code,zone_name,latitude,longitude,location_source,resource_code,code_source,resource_description,resource_type
+P1,Parque nº 1 Laredo,SEMCA,39035,Laredo,43.404727,-3.4464727,OpenStreetMap,BUP-11,SEMCA manual,Autobomba de primera salida y rescate,URBAN_ENGINE
+P1,Parque nº 1 Laredo,SEMCA,39035,Laredo,43.404727,-3.4464727,OpenStreetMap,BRP-11,SEMCA manual,Autobomba rural,RURAL_ENGINE
+P1,Parque nº 1 Laredo,SEMCA,39035,Laredo,43.404727,-3.4464727,OpenStreetMap,BCA-11,SEMCA manual,Autobomba cisterna-nodriza,WATER_TENDER
+P1,Parque nº 1 Laredo,SEMCA,39035,Laredo,43.404727,-3.4464727,OpenStreetMap,AE-11,SEMCA manual,Autoescala de 30 m,AERIAL_LADDER
+P1,Parque nº 1 Laredo,SEMCA,39035,Laredo,43.404727,-3.4464727,OpenStreetMap,M-11,SEMCA manual,Vehículo ligero de personal,PERSONNEL_CARRIER
+P1,Parque nº 1 Laredo,SEMCA,39035,Laredo,43.404727,-3.4464727,OpenStreetMap,M-01,SEMCA manual,Vehículo de mando,COMMAND_UNIT
+P1,Parque nº 1 Laredo,SEMCA,39035,Laredo,43.404727,-3.4464727,OpenStreetMap,P1-EQ-01,Own (TFM),Remolque de achiques,EQUIPMENT
+P1,Parque nº 1 Laredo,SEMCA,39035,Laredo,43.404727,-3.4464727,OpenStreetMap,P1-EQ-02,Own (TFM),Remolque con bomba de gran caudal,EQUIPMENT
+P2,Parque nº 2 Valdáliga,SEMCA,39091,Valdáliga,43.3456526,-4.3395107,OpenStreetMap,BRP-21,SEMCA manual,Autobomba de primera salida y rescate,RURAL_ENGINE
+P2,Parque nº 2 Valdáliga,SEMCA,39091,Valdáliga,43.3456526,-4.3395107,OpenStreetMap,BRP-22,SEMCA manual,Autobomba de segunda salida (rural),RURAL_ENGINE
+P2,Parque nº 2 Valdáliga,SEMCA,39091,Valdáliga,43.3456526,-4.3395107,OpenStreetMap,AE-21,SEMCA manual,Autoescala de 30 m,AERIAL_LADDER
+P2,Parque nº 2 Valdáliga,SEMCA,39091,Valdáliga,43.3456526,-4.3395107,OpenStreetMap,M-21,SEMCA manual,Vehículo ligero de personal,PERSONNEL_CARRIER
+P2,Parque nº 2 Valdáliga,SEMCA,39091,Valdáliga,43.3456526,-4.3395107,OpenStreetMap,M-02,SEMCA manual,Vehículo de mando,COMMAND_UNIT
+P2,Parque nº 2 Valdáliga,SEMCA,39091,Valdáliga,43.3456526,-4.3395107,OpenStreetMap,P2-EQ-01,Own (TFM),Remolque de achiques,EQUIPMENT
+P2,Parque nº 2 Valdáliga,SEMCA,39091,Valdáliga,43.3456526,-4.3395107,OpenStreetMap,P2-EQ-02,Own (TFM),Remolque con bomba de gran caudal,EQUIPMENT
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,BRP-31,SEMCA manual,Autobomba de primera salida y rescate,RURAL_ENGINE
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,BRP-32,SEMCA manual,Autobomba rural,RURAL_ENGINE
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,BCA-31,SEMCA manual,Autobomba cisterna-nodriza,WATER_TENDER
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,AE-31,SEMCA manual,Autoescala de 30 m,AERIAL_LADDER
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,M-31,SEMCA manual,Vehículo ligero de personal,PERSONNEL_CARRIER
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,M-03,SEMCA manual,Vehículo de mando,COMMAND_UNIT
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,P3-EQ-01,Own (TFM),Remolque de achiques,EQUIPMENT
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,P3-EQ-02,Own (TFM),Remolque con embarcación neumática,EQUIPMENT
+P3,Parque nº 3 Reinosa,SEMCA,39059,Reinosa,42.9968034,-4.1316842,OpenStreetMap,P3-ATV-01,Own (TFM),Quad,ALL_TERRAIN_VEHICLE
+P4,Parque nº 4 Tama,SEMCA,39022,Cillorigo de Liébana,43.1832007,-4.6010368,OpenStreetMap,BRP-41,SEMCA manual,Autobomba de primera salida y rescate,RURAL_ENGINE
+P4,Parque nº 4 Tama,SEMCA,39022,Cillorigo de Liébana,43.1832007,-4.6010368,OpenStreetMap,BFP-41,SEMCA manual,Autobomba de segunda salida (forestal),FOREST_ENGINE
+P4,Parque nº 4 Tama,SEMCA,39022,Cillorigo de Liébana,43.1832007,-4.6010368,OpenStreetMap,BCA-41,SEMCA manual,Autobomba cisterna-nodriza,WATER_TENDER
+P4,Parque nº 4 Tama,SEMCA,39022,Cillorigo de Liébana,43.1832007,-4.6010368,OpenStreetMap,M-41,SEMCA manual,Vehículo ligero de personal,PERSONNEL_CARRIER
+P4,Parque nº 4 Tama,SEMCA,39022,Cillorigo de Liébana,43.1832007,-4.6010368,OpenStreetMap,M-04,SEMCA manual,Vehículo de mando,COMMAND_UNIT
+P4,Parque nº 4 Tama,SEMCA,39022,Cillorigo de Liébana,43.1832007,-4.6010368,OpenStreetMap,P4-EQ-01,Own (TFM),Remolque de achiques,EQUIPMENT
+P5,Parque nº 5 Villas Pasiegas (Villacarriedo),SEMCA,39098,Villacarriedo,43.2457477,-3.8499957,OpenStreetMap,BRP-51,SEMCA manual,Autobomba de primera salida y rescate,RURAL_ENGINE
+P5,Parque nº 5 Villas Pasiegas (Villacarriedo),SEMCA,39098,Villacarriedo,43.2457477,-3.8499957,OpenStreetMap,BFP-51,SEMCA manual,Autobomba forestal,FOREST_ENGINE
+P5,Parque nº 5 Villas Pasiegas (Villacarriedo),SEMCA,39098,Villacarriedo,43.2457477,-3.8499957,OpenStreetMap,BCA-51,SEMCA manual,Autobomba cisterna-nodriza,WATER_TENDER
+P5,Parque nº 5 Villas Pasiegas (Villacarriedo),SEMCA,39098,Villacarriedo,43.2457477,-3.8499957,OpenStreetMap,P5-RES-01,Own (TFM),Furgón de rescate,RESCUE_UNIT
+P5,Parque nº 5 Villas Pasiegas (Villacarriedo),SEMCA,39098,Villacarriedo,43.2457477,-3.8499957,OpenStreetMap,M-51,SEMCA manual,Vehículo ligero de personal,PERSONNEL_CARRIER
+P5,Parque nº 5 Villas Pasiegas (Villacarriedo),SEMCA,39098,Villacarriedo,43.2457477,-3.8499957,OpenStreetMap,M-05,SEMCA manual,Vehículo de mando,COMMAND_UNIT
+P5,Parque nº 5 Villas Pasiegas (Villacarriedo),SEMCA,39098,Villacarriedo,43.2457477,-3.8499957,OpenStreetMap,P5-EQ-01,Own (TFM),Remolque de achiques,EQUIPMENT
+P6,Parque nº 6 Corrales de Buelna,SEMCA,39025,Los Corrales de Buelna,43.251797,-4.0732209,OpenStreetMap,BRP-61,SEMCA manual,Autobomba de primera salida y rescate,RURAL_ENGINE
+P6,Parque nº 6 Corrales de Buelna,SEMCA,39025,Los Corrales de Buelna,43.251797,-4.0732209,OpenStreetMap,BRP-62,SEMCA manual,Autobomba rural,RURAL_ENGINE
+P6,Parque nº 6 Corrales de Buelna,SEMCA,39025,Los Corrales de Buelna,43.251797,-4.0732209,OpenStreetMap,BCA-61,SEMCA manual,Autobomba cisterna-nodriza,WATER_TENDER
+P6,Parque nº 6 Corrales de Buelna,SEMCA,39025,Los Corrales de Buelna,43.251797,-4.0732209,OpenStreetMap,AE-61,SEMCA manual,Autoescala de 30 m,AERIAL_LADDER
+P6,Parque nº 6 Corrales de Buelna,SEMCA,39025,Los Corrales de Buelna,43.251797,-4.0732209,OpenStreetMap,M-61,SEMCA manual,Vehículo ligero de personal,PERSONNEL_CARRIER
+P6,Parque nº 6 Corrales de Buelna,SEMCA,39025,Los Corrales de Buelna,43.251797,-4.0732209,OpenStreetMap,M-06,SEMCA manual,Vehículo de mando,COMMAND_UNIT
+P6,Parque nº 6 Corrales de Buelna,SEMCA,39025,Los Corrales de Buelna,43.251797,-4.0732209,OpenStreetMap,P6-EQ-01,Own (TFM),Remolque de achiques,EQUIPMENT
+P6,Parque nº 6 Corrales de Buelna,SEMCA,39025,Los Corrales de Buelna,43.251797,-4.0732209,OpenStreetMap,P6-EQ-02,Own (TFM),Remolque con ventilador de gran caudal (túneles),EQUIPMENT
+C112,Central 112 y medios comunes,SEMCA,39075,Santander,,,Assumed (no source),DELTA-ROMEO,SEMCA manual,Helicóptero del 112,AERIAL_UNIT
+C112,Central 112 y medios comunes,SEMCA,39075,Santander,,,Assumed (no source),VUM-01,SEMCA manual,Camión de apoyo logístico con caja y grúa,LOGISTICS_UNIT
+C112,Central 112 y medios comunes,SEMCA,39075,Santander,,,Assumed (no source),L-01,SEMCA manual,Vehículo ligero de la Central 112,PERSONNEL_CARRIER
+C112,Central 112 y medios comunes,SEMCA,39075,Santander,,,Assumed (no source),L-02,SEMCA manual,Vehículo ligero de la Central 112,PERSONNEL_CARRIER
+C112,Central 112 y medios comunes,SEMCA,39075,Santander,,,Assumed (no source),C112-EQ-01,Own (TFM),Grupo electrógeno de gran potencia,EQUIPMENT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-01,Own (TFM),Autotanque polivalente de primera salida,URBAN_ENGINE
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-02,Own (TFM),Autotanque polivalente de primera salida,URBAN_ENGINE
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-03,Own (TFM),Autotanque polivalente de primera salida,URBAN_ENGINE
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-04,Own (TFM),Autotanque polivalente de primera salida,URBAN_ENGINE
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-05,Own (TFM),Autotanque polivalente de primera salida,URBAN_ENGINE
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-06,Own (TFM),Nodriza (más de 8.500 l),WATER_TENDER
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-07,Own (TFM),Nodriza (más de 8.500 l),WATER_TENDER
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-08,Own (TFM),Vehículo de rescate en altura (30 m),AERIAL_LADDER
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-09,Own (TFM),Mixto de extinción ligero,URBAN_ENGINE
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-10,Own (TFM),Mixto generador eléctrico ligero,LOGISTICS_UNIT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-11,Own (TFM),Mixto de riesgo químico ligero,HAZMAT_UNIT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-12,Own (TFM),"Taller, generador y bombas (pesado)",LOGISTICS_UNIT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-13,Own (TFM),Pluma con caja (pesado),LOGISTICS_UNIT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-14,Own (TFM),Vehículo de jefatura,COMMAND_UNIT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-15,Own (TFM),Vehículo de jefatura,COMMAND_UNIT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-16,Own (TFM),Vehículo de jefatura,COMMAND_UNIT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-17,Own (TFM),Generador de espuma,EQUIPMENT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-18,Own (TFM),Generador de espuma,EQUIPMENT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-19,Own (TFM),Remolque de riesgo químico,EQUIPMENT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-20,Own (TFM),Remolque de botellas de aire comprimido y compresor,EQUIPMENT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-21,Own (TFM),Remolque de herramientas de excarcelación,EQUIPMENT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-22,Own (TFM),Remolque de cuerdas y material de rescate vertical,EQUIPMENT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-23,Own (TFM),Remolque de apeos,EQUIPMENT
+M-SANTANDER,Parque de bomberos de Santander,Ayuntamiento de Santander,39075,Santander,43.4413499,-3.8770292,OpenStreetMap,SAN-24,Own (TFM),Remolque con motobomba pesada,EQUIPMENT
+M-TORRELAVEGA,Parque de Bomberos de Torrelavega,Ayuntamiento de Torrelavega,39087,Torrelavega,43.3436846,-4.05205,OpenStreetMap,TOR-BUP-5,City council,Autobomba urbana pesada (BUP-5),URBAN_ENGINE
+M-TORRELAVEGA,Parque de Bomberos de Torrelavega,Ayuntamiento de Torrelavega,39087,Torrelavega,43.3436846,-4.05205,OpenStreetMap,TOR-01,Own (TFM),"Autobomba ligera de primera salida (mín. 2.000 l, 2024)",URBAN_ENGINE
+M-TORRELAVEGA,Parque de Bomberos de Torrelavega,Ayuntamiento de Torrelavega,39087,Torrelavega,43.3436846,-4.05205,OpenStreetMap,TOR-02,Own (TFM),Autobomba de segunda salida 4x4 (3.000 l),RURAL_ENGINE
+M-TORRELAVEGA,Parque de Bomberos de Torrelavega,Ayuntamiento de Torrelavega,39087,Torrelavega,43.3436846,-4.05205,OpenStreetMap,TOR-03,Own (TFM),Autoescala,AERIAL_LADDER
+M-TORRELAVEGA,Parque de Bomberos de Torrelavega,Ayuntamiento de Torrelavega,39087,Torrelavega,43.3436846,-4.05205,OpenStreetMap,TOR-04,Own (TFM),"Autoescala de segunda salida (30 m, 2022)",AERIAL_LADDER
+M-CASTRO,Parque de Bomberos de Castro Urdiales,Ayuntamiento de Castro Urdiales,39020,Castro-Urdiales,43.3651998,-3.2214518,OpenStreetMap,CAS-01,Own (TFM),Autobomba rural pesada (2001),RURAL_ENGINE
+M-CASTRO,Parque de Bomberos de Castro Urdiales,Ayuntamiento de Castro Urdiales,39020,Castro-Urdiales,43.3651998,-3.2214518,OpenStreetMap,CAS-02,Own (TFM),Bomba urbana ligera (2008),URBAN_ENGINE
+M-CASTRO,Parque de Bomberos de Castro Urdiales,Ayuntamiento de Castro Urdiales,39020,Castro-Urdiales,43.3651998,-3.2214518,OpenStreetMap,CAS-03,Own (TFM),Vehículo ligero 4x4,PERSONNEL_CARRIER
+M-CASTRO,Parque de Bomberos de Castro Urdiales,Ayuntamiento de Castro Urdiales,39020,Castro-Urdiales,43.3651998,-3.2214518,OpenStreetMap,CAS-04,Own (TFM),Vehículo ligero 4x4,PERSONNEL_CARRIER
+M-CASTRO,Parque de Bomberos de Castro Urdiales,Ayuntamiento de Castro Urdiales,39020,Castro-Urdiales,43.3651998,-3.2214518,OpenStreetMap,CAS-05,Own (TFM),Vehículo ligero 4x4,PERSONNEL_CARRIER
+M-CASTRO,Parque de Bomberos de Castro Urdiales,Ayuntamiento de Castro Urdiales,39020,Castro-Urdiales,43.3651998,-3.2214518,OpenStreetMap,CAS-06,Own (TFM),Furgón de servicios (2004),LOGISTICS_UNIT
+M-CASTRO,Parque de Bomberos de Castro Urdiales,Ayuntamiento de Castro Urdiales,39020,Castro-Urdiales,43.3651998,-3.2214518,OpenStreetMap,CAS-07,Own (TFM),Autoescala automática (2020),AERIAL_LADDER
+M-CAMARGO,Parque de Bomberos de Camargo,Ayuntamiento de Camargo,39016,Camargo,43.4104757,-3.8471525,OpenStreetMap,CAM-B-15,City council,Autobomba urbana ligera B-15 (3.500 l),URBAN_ENGINE
+M-CAMARGO,Parque de Bomberos de Camargo,Ayuntamiento de Camargo,39016,Camargo,43.4104757,-3.8471525,OpenStreetMap,CAM-B-13,City council,"Autobomba forestal pesada B-13 (5.000 l, 4x4)",FOREST_ENGINE
+M-CAMARGO,Parque de Bomberos de Camargo,Ayuntamiento de Camargo,39016,Camargo,43.4104757,-3.8471525,OpenStreetMap,CAM-B-11,City council,"Autobomba forestal ligera B-11 (3.500 l, 4x4)",FOREST_ENGINE
+M-CAMARGO,Parque de Bomberos de Camargo,Ayuntamiento de Camargo,39016,Camargo,43.4104757,-3.8471525,OpenStreetMap,CAM-B-14,City council,"Autobomba forestal ligera B-14 (4.000 l, 4x4)",FOREST_ENGINE
+M-CAMARGO,Parque de Bomberos de Camargo,Ayuntamiento de Camargo,39016,Camargo,43.4104757,-3.8471525,OpenStreetMap,CAM-FR-12,City council,Furgón de rescate FR-12,RESCUE_UNIT
+M-CAMARGO,Parque de Bomberos de Camargo,Ayuntamiento de Camargo,39016,Camargo,43.4104757,-3.8471525,OpenStreetMap,CAM-FR-13,City council,Furgón de rescate medicalizado FR-13,MEDICAL_UNIT
+M-CAMARGO,Parque de Bomberos de Camargo,Ayuntamiento de Camargo,39016,Camargo,43.4104757,-3.8471525,OpenStreetMap,CAM-FR-11,City council,Vehículo de rescate ligero FR-11 (4x4),RESCUE_UNIT
+M-CAMARGO,Parque de Bomberos de Camargo,Ayuntamiento de Camargo,39016,Camargo,43.4104757,-3.8471525,OpenStreetMap,CAM-FR-J,City council,Vehículo de mando FR-J (4x4),COMMAND_UNIT
+O-VOLUNTARIOS,Real Cuerpo de Bomberos Voluntarios de Santander,Cuerpo de voluntarios,39075,Santander,43.4615356,-3.8173508,OpenStreetMap,,,,
+O-AEROPUERTO,Parque de bomberos del Aeropuerto de Santander,Aeropuerto,39016,Camargo,43.4228704,-3.8218656,OpenStreetMap,,,,

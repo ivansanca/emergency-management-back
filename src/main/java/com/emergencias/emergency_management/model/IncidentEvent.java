@@ -15,14 +15,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class IncidentEvent {
 
-    @NotBlank
     private String id;
 
     @NotBlank
     private String type;
 
-    @Min(1)
-    @Max(5)
+    @Min(0)
+    @Max(4)
     private int severity;
 
     @NotBlank

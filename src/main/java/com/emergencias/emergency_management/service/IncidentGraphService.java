@@ -43,8 +43,8 @@ public class IncidentGraphService {
                 || event.getType().isBlank()
                 || event.getZoneCode() == null
                 || event.getZoneCode().isBlank()
-                || event.getSeverity() < 1
-                || event.getSeverity() > 5) {
+                || event.getSeverity() < 0
+                || event.getSeverity() > 4) {
 
             throw new IllegalArgumentException(
                     "Los datos del incidente no son válidos");

@@ -3,6 +3,7 @@ package com.emergencias.emergency_management.service;
 import com.emergencias.emergency_management.config.DecisionProperties;
 import com.emergencias.emergency_management.dto.DecisionResponse;
 import com.emergencias.emergency_management.dto.ResourceRecommendation;
+import com.emergencias.emergency_management.dto.ResourceShortfall;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.repository.DecisionRuleRepository;
 import com.emergencias.emergency_management.repository.IncidentRepository;
@@ -16,9 +17,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,69 +65,74 @@ public class DecisionService {
                             "No hay una regla activa para este tipo "
                                     + "de incidente y gravedad.")
                     .recommendations(List.of())
+                    .shortfalls(List.of())
                     .build();
         }
 
         ApplicableRuleRow selectedRule = rule.get();
 
+        List<Requirement> requirements =
+                requirementsOf(selectedRule, applicableRules);
+
         List<String> eligibleTypes =
                 resourceTypesOf(selectedRule, applicableRules);
 
-        List<ResourceCandidateRow> candidates =
-                eligibleTypes.isEmpty()
-                        ? List.of()
-                        : resourceRepository.findAvailableForIncident(
-                        incidentId,
-                        eligibleTypes,
-                        decisionProperties.getMaxDistanceKm(),
-                        decisionProperties.getMaxTravelTimeMinutes());
+        List<ResourceCandidateRow> candidates = new ArrayList<>();
+        if (!eligibleTypes.isEmpty()) {
+            candidates.addAll(resourceRepository.findAvailableForIncident(
+                    incidentId,
+                    eligibleTypes,
+                    decisionProperties.getMaxDistanceKm(),
+                    decisionProperties.getMaxTravelTimeMinutes()));
+            candidates.addAll(
+                    resourceRepository.findAvailableAerialResources(
+                            eligibleTypes));
+        }
 
-        List<ResourceRecommendation> recommendations =
-                candidates.stream()
-                        .map(candidate -> {
+        Set<String> selectedIds = new HashSet<>();
+        List<ResourceShortfall> shortfalls = new ArrayList<>();
 
-                            String routeDescription =
-                                    candidate.route() == null
-                                            ? candidate.zoneName()
-                                            : String.join(" → ", candidate.route());
+        for (Requirement requirement : requirements) {
+            List<ResourceCandidateRow> picked = candidates.stream()
+                    .filter(candidate -> requirement.types()
+                            .contains(candidate.type()))
+                    .filter(candidate -> !selectedIds.contains(candidate.id()))
+                    .limit(requirement.quantity())
+                    .toList();
 
-                            String reason = String.format(
-                                    java.util.Locale.ROOT,
-                                    "Ruta: %s. Distancia estimada: %.1f km. "
-                                            + "Tiempo estimado: %.0f min. "
-                                            + "Recurso disponible y compatible "
-                                            + "con la regla %s.",
-                                    routeDescription,
-                                    candidate.distanceKm(),
-                                    candidate.travelTimeMinutes(),
-                                    selectedRule.ruleName());
+            picked.forEach(candidate -> selectedIds.add(candidate.id()));
 
-                            return ResourceRecommendation.builder()
-                                    .resourceId(candidate.id())
-                                    .name(candidate.name())
-                                    .type(candidate.type())
-                                    .zoneName(candidate.zoneName())
-                                    .distanceKm(candidate.distanceKm())
-                                    .travelTimeMinutes(
-                                            candidate.travelTimeMinutes())
-                                    .route(candidate.route())
-                                    .reason(reason)
-                                    .build();
-                        })
-                        .toList();
+            if (picked.size() < requirement.quantity()) {
+                shortfalls.add(ResourceShortfall.builder()
+                        .requirement(requirement.label())
+                        .requested(requirement.quantity())
+                        .found(picked.size())
+                        .build());
+            }
+        }
+
+        List<ResourceRecommendation> recommendations = candidates.stream()
+                .filter(candidate -> selectedIds.contains(candidate.id()))
+                .map(candidate -> toRecommendation(
+                        candidate, selectedRule.ruleName()))
+                .toList();
 
         String ruleDescription =
                 selectedRule.ruleName()
                         + ": " + selectedRule.description()
-                        + " Tipos admitidos: "
-                        + String.join(", ", eligibleTypes);
+                        + " Necesidades: "
+                        + requirements.stream()
+                        .map(requirement -> requirement.quantity()
+                                + " x " + requirement.label())
+                        .collect(Collectors.joining(", "));
 
         log.info(
                 "Decisión para incidente {} mediante regla {}: "
-                        + "{} recursos recomendados",
+                        + "{} recursos recomendados, {} necesidades sin cubrir",
                 incidentId,
                 selectedRule.ruleId(),
-                recommendations.size());
+                recommendations.size(),
+                shortfalls.size());
 
         return DecisionResponse.builder()
                 .incidentId(incident.getId())
@@ -126,6 +140,7 @@ public class DecisionService {
                 .severity(incident.getSeverity())
                 .ruleApplied(ruleDescription)
                 .recommendations(recommendations)
+                .shortfalls(shortfalls)
                 .build();
     }
 
@@ -137,6 +152,64 @@ public class DecisionService {
         return selectRule(applicableRules)
                 .map(rule -> resourceTypesOf(rule, applicableRules))
                 .orElse(List.of());
+    }
+
+    private ResourceRecommendation toRecommendation(
+            ResourceCandidateRow candidate, String ruleName) {
+
+        if (candidate.travelTimeMinutes() == null) {
+            String reason = String.format(
+                    Locale.ROOT,
+                    "Medio aéreo con base en %s. Se moviliza sin cálculo "
+                            + "de ruta por carretera. Recurso disponible "
+                            + "y compatible con la regla %s.",
+                    candidate.zoneName(),
+                    ruleName);
+
+            return ResourceRecommendation.builder()
+                    .resourceId(candidate.id())
+                    .name(candidate.name())
+                    .type(candidate.type())
+                    .zoneName(candidate.zoneName())
+                    .route(List.of())
+                    .reason(reason)
+                    .build();
+        }
+
+        double distanceKm = roundToOneDecimal(candidate.distanceKm());
+        double travelTimeMinutes =
+                roundToOneDecimal(candidate.travelTimeMinutes());
+
+        String routeDescription =
+                candidate.route() == null
+                        ? candidate.zoneName()
+                        : String.join(" → ", candidate.route());
+
+        String reason = String.format(
+                Locale.ROOT,
+                "Ruta: %s. Distancia estimada: %.1f km. "
+                        + "Tiempo estimado: %.0f min. "
+                        + "Recurso disponible y compatible "
+                        + "con la regla %s.",
+                routeDescription,
+                distanceKm,
+                travelTimeMinutes,
+                ruleName);
+
+        return ResourceRecommendation.builder()
+                .resourceId(candidate.id())
+                .name(candidate.name())
+                .type(candidate.type())
+                .zoneName(candidate.zoneName())
+                .distanceKm(distanceKm)
+                .travelTimeMinutes(travelTimeMinutes)
+                .route(candidate.route())
+                .reason(reason)
+                .build();
+    }
+
+    private static double roundToOneDecimal(double value) {
+        return Math.round(value * 10) / 10.0;
     }
 
     private Optional<ApplicableRuleRow> selectRule(
@@ -161,5 +234,42 @@ public class DecisionService {
                 .distinct()
                 .sorted()
                 .toList();
+    }
+
+    private List<Requirement> requirementsOf(
+            ApplicableRuleRow selectedRule,
+            List<ApplicableRuleRow> applicableRules) {
+
+        Map<String, Set<String>> typesByGroup = new TreeMap<>();
+        Map<String, Integer> quantityByGroup = new TreeMap<>();
+
+        applicableRules.stream()
+                .filter(rule -> rule.ruleId()
+                        .equals(selectedRule.ruleId()))
+                .forEach(rule -> {
+                    typesByGroup
+                            .computeIfAbsent(
+                                    rule.requirementGroup(),
+                                    group -> new TreeSet<>())
+                            .add(rule.resourceType());
+                    quantityByGroup.merge(
+                            rule.requirementGroup(),
+                            rule.quantity(),
+                            Math::max);
+                });
+
+        return typesByGroup.entrySet().stream()
+                .map(entry -> new Requirement(
+                        entry.getValue(),
+                        quantityByGroup.get(entry.getKey())))
+                .sorted(Comparator.comparing(Requirement::label))
+                .toList();
+    }
+
+    private record Requirement(Set<String> types, int quantity) {
+
+        String label() {
+            return String.join("/", types);
+        }
     }
 }

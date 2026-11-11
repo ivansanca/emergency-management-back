@@ -57,9 +57,9 @@ class IncidentLifecycleServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(incident(IncidentStatus.ACTIVE)));
         when(resourceRepository.findById("resource-1"))
-                .thenReturn(Optional.of(resource("FIRE_CREW", true)));
+                .thenReturn(Optional.of(resource("FOREST_ENGINE", true)));
         when(decisionService.eligibleResourceTypes("incident-1"))
-                .thenReturn(List.of("FIRE_CREW", "WATER_TENDER"));
+                .thenReturn(List.of("FOREST_ENGINE", "WATER_TENDER"));
         when(resourceRepository.assignToIncident("resource-1", "incident-1"))
                 .thenReturn(Optional.of("2026-10-31T17:00:00Z"));
 
@@ -68,7 +68,7 @@ class IncidentLifecycleServiceTest {
 
         assertEquals("incident-1", response.getIncidentId());
         assertEquals("resource-1", response.getResourceId());
-        assertEquals("FIRE_CREW", response.getResourceType());
+        assertEquals("FOREST_ENGINE", response.getResourceType());
         assertEquals("2026-10-31T17:00:00Z", response.getAssignedAt());
     }
 
@@ -92,7 +92,7 @@ class IncidentLifecycleServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(incident(IncidentStatus.ACTIVE)));
         when(resourceRepository.findById("resource-1"))
-                .thenReturn(Optional.of(resource("FIRE_CREW", false)));
+                .thenReturn(Optional.of(resource("FOREST_ENGINE", false)));
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
@@ -111,7 +111,7 @@ class IncidentLifecycleServiceTest {
         when(resourceRepository.findById("resource-1"))
                 .thenReturn(Optional.of(resource("AMBULANCE", true)));
         when(decisionService.eligibleResourceTypes("incident-1"))
-                .thenReturn(List.of("FIRE_CREW"));
+                .thenReturn(List.of("FOREST_ENGINE"));
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,

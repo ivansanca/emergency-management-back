@@ -67,20 +67,20 @@ class IncidentGraphServiceTest {
         when(zoneRepository.findById("39014"))
                 .thenReturn(Optional.of(CABUERNIGA));
         Incident existing = new Incident(
-                "incident-1", "FOREST_FIRE", 4, "Forest fire",
+                "incident-1", "FOREST_FIRE", 2, "Forest fire",
                 IncidentStatus.CLOSED, CABUERNIGA);
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(existing));
 
         incidentGraphService.save(new IncidentEvent(
-                "incident-1", "FOREST_FIRE", 5, "39014", "Forest fire"));
+                "incident-1", "FOREST_FIRE", 3, "39014", "Forest fire"));
 
         ArgumentCaptor<Incident> incidentCaptor =
                 ArgumentCaptor.forClass(Incident.class);
         verify(incidentRepository).save(incidentCaptor.capture());
         assertEquals(IncidentStatus.CLOSED,
                 incidentCaptor.getValue().getStatus());
-        assertEquals(5, incidentCaptor.getValue().getSeverity());
+        assertEquals(3, incidentCaptor.getValue().getSeverity());
     }
 
     @Test
@@ -105,8 +105,8 @@ class IncidentGraphServiceTest {
                 new IncidentEvent("id", " ", 3, "39014", null),
                 new IncidentEvent("id", "FOREST_FIRE", 3, null, null),
                 new IncidentEvent("id", "FOREST_FIRE", 3, " ", null),
-                new IncidentEvent("id", "FOREST_FIRE", 0, "39014", null),
-                new IncidentEvent("id", "FOREST_FIRE", 6, "39014", null));
+                new IncidentEvent("id", "FOREST_FIRE", -1, "39014", null),
+                new IncidentEvent("id", "FOREST_FIRE", 5, "39014", null));
 
         assertThrows(
                 IllegalArgumentException.class,
