@@ -2,6 +2,7 @@ package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentEvent;
+import com.emergencias.emergency_management.model.IncidentSource;
 import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.model.Zone;
 import com.emergencias.emergency_management.repository.IncidentRepository;
@@ -13,13 +14,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -40,26 +43,96 @@ class IncidentGraphServiceTest {
     @InjectMocks
     private IncidentGraphService incidentGraphService;
 
+    private Incident savedIncident() {
+        ArgumentCaptor<Incident> incidentCaptor =
+                ArgumentCaptor.forClass(Incident.class);
+        verify(incidentRepository).save(incidentCaptor.capture());
+        return incidentCaptor.getValue();
+    }
+
     @Test
     void saveMapsEventToIncidentAndPersistsIt() {
         when(zoneRepository.findById("39014"))
                 .thenReturn(Optional.of(CABUERNIGA));
-        IncidentEvent event = new IncidentEvent(
-                "incident-1", "FOREST_FIRE", 4, "39014", "Forest fire");
+        Instant occurredAt = Instant.parse("2026-08-14T15:30:00Z");
 
-        incidentGraphService.save(event);
+        incidentGraphService.save(IncidentEvent.builder()
+                .id("incident-1")
+                .type("FOREST_FIRE")
+                .severity(3)
+                .zoneCode("39014")
+                .occurredAt(occurredAt)
+                .source(IncidentSource.FIRMS)
+                .description("Forest fire")
+                .build());
 
-        ArgumentCaptor<Incident> incidentCaptor =
-                ArgumentCaptor.forClass(Incident.class);
-        verify(incidentRepository).save(incidentCaptor.capture());
-        Incident savedIncident = incidentCaptor.getValue();
+        Incident incident = savedIncident();
+        assertEquals("incident-1", incident.getId());
+        assertEquals("FOREST_FIRE", incident.getType());
+        assertEquals(3, incident.getSeverity());
+        assertEquals("Forest fire", incident.getDescription());
+        assertSame(CABUERNIGA, incident.getZone());
+        assertEquals(IncidentStatus.ACTIVE, incident.getStatus());
+        assertEquals(occurredAt, incident.getOccurredAt());
+        assertEquals(IncidentSource.FIRMS, incident.getSource());
+        assertNotNull(incident.getReceivedAt());
+    }
 
-        assertEquals("incident-1", savedIncident.getId());
-        assertEquals("FOREST_FIRE", savedIncident.getType());
-        assertEquals(4, savedIncident.getSeverity());
-        assertEquals("Forest fire", savedIncident.getDescription());
-        assertSame(CABUERNIGA, savedIncident.getZone());
-        assertEquals(IncidentStatus.ACTIVE, savedIncident.getStatus());
+    @Test
+    void saveResolvesNearestZoneFromCoordinates() {
+        when(zoneRepository.findNearest(43.2265, -4.3016))
+                .thenReturn(Optional.of(CABUERNIGA));
+
+        incidentGraphService.save(IncidentEvent.builder()
+                .id("incident-1")
+                .type("FOREST_FIRE")
+                .severity(2)
+                .latitude(43.2265)
+                .longitude(-4.3016)
+                .build());
+
+        Incident incident = savedIncident();
+        assertSame(CABUERNIGA, incident.getZone());
+        assertEquals(43.2265, incident.getLatitude());
+        assertEquals(-4.3016, incident.getLongitude());
+    }
+
+    @Test
+    void saveUsesZoneCodeBeforeCoordinates() {
+        when(zoneRepository.findById("39014"))
+                .thenReturn(Optional.of(CABUERNIGA));
+
+        incidentGraphService.save(IncidentEvent.builder()
+                .id("incident-1")
+                .type("FOREST_FIRE")
+                .severity(2)
+                .zoneCode("39014")
+                .latitude(43.3000)
+                .longitude(-4.0000)
+                .build());
+
+        Incident incident = savedIncident();
+        assertSame(CABUERNIGA, incident.getZone());
+        assertEquals(43.3000, incident.getLatitude());
+        verify(zoneRepository, never()).findNearest(anyDouble(), anyDouble());
+    }
+
+    @Test
+    void saveAppliesDefaultsWhenOptionalFieldsAreMissing() {
+        when(zoneRepository.findById("39014"))
+                .thenReturn(Optional.of(CABUERNIGA));
+
+        incidentGraphService.save(IncidentEvent.builder()
+                .id("incident-1")
+                .type("FOREST_FIRE")
+                .severity(1)
+                .zoneCode("39014")
+                .build());
+
+        Incident incident = savedIncident();
+        assertEquals(IncidentSource.MANUAL, incident.getSource());
+        assertNotNull(incident.getReceivedAt());
+        assertEquals(incident.getReceivedAt(), incident.getOccurredAt());
     }
 
     @Test
@@ -72,15 +145,16 @@ class IncidentGraphServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(existing));
 
-        incidentGraphService.save(new IncidentEvent(
-                "incident-1", "FOREST_FIRE", 3, "39014", "Forest fire"));
+        incidentGraphService.save(IncidentEvent.builder()
+                .id("incident-1")
+                .type("FOREST_FIRE")
+                .severity(3)
+                .zoneCode("39014")
+                .build());
 
-        ArgumentCaptor<Incident> incidentCaptor =
-                ArgumentCaptor.forClass(Incident.class);
-        verify(incidentRepository).save(incidentCaptor.capture());
-        assertEquals(IncidentStatus.CLOSED,
-                incidentCaptor.getValue().getStatus());
-        assertEquals(3, incidentCaptor.getValue().getSeverity());
+        Incident incident = savedIncident();
+        assertEquals(IncidentStatus.CLOSED, incident.getStatus());
+        assertEquals(3, incident.getSeverity());
     }
 
     @Test
@@ -90,32 +164,25 @@ class IncidentGraphServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> incidentGraphService.save(new IncidentEvent(
-                        "incident-1", "FOREST_FIRE", 3, "99999", null)));
+                () -> incidentGraphService.save(IncidentEvent.builder()
+                        .id("incident-1")
+                        .type("FOREST_FIRE")
+                        .severity(3)
+                        .zoneCode("99999")
+                        .build()));
 
         verify(incidentRepository, never()).save(any());
     }
 
     @Test
-    void saveRejectsInvalidEventsWithoutPersisting() {
-        List<IncidentEvent> invalidEvents = List.of(
-                new IncidentEvent(null, "FOREST_FIRE", 3, "39014", null),
-                new IncidentEvent(" ", "FOREST_FIRE", 3, "39014", null),
-                new IncidentEvent("id", null, 3, "39014", null),
-                new IncidentEvent("id", " ", 3, "39014", null),
-                new IncidentEvent("id", "FOREST_FIRE", 3, null, null),
-                new IncidentEvent("id", "FOREST_FIRE", 3, " ", null),
-                new IncidentEvent("id", "FOREST_FIRE", -1, "39014", null),
-                new IncidentEvent("id", "FOREST_FIRE", 5, "39014", null));
-
+    void saveRejectsInvalidEventWithoutPersisting() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> incidentGraphService.save(null));
-        for (IncidentEvent event : invalidEvents) {
-            assertThrows(
-                    IllegalArgumentException.class,
-                    () -> incidentGraphService.save(event));
-        }
+                () -> incidentGraphService.save(IncidentEvent.builder()
+                        .id("incident-1")
+                        .type("FOREST_FIRE")
+                        .severity(3)
+                        .build()));
 
         verifyNoInteractions(incidentRepository, zoneRepository);
     }

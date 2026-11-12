@@ -8,6 +8,7 @@ import com.emergencias.emergency_management.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Objects;
 
 @Service
@@ -18,13 +19,11 @@ public class IncidentGraphService {
     private final ZoneRepository zoneRepository;
 
     public void save(IncidentEvent event) {
-        validate(event);
+        IncidentEventValidator.validate(event);
 
-        Zone zone = zoneRepository.findById(event.getZoneCode())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No existe la zona " + event.getZoneCode()));
+        Zone zone = resolveZone(event);
 
-        Incident incident = new Incident(event, zone);
+        Incident incident = new Incident(event, zone, Instant.now());
 
         incidentRepository.findById(event.getId())
                 .map(Incident::getStatus)
@@ -34,20 +33,17 @@ public class IncidentGraphService {
         incidentRepository.save(incident);
     }
 
-    private void validate(IncidentEvent event) {
+    private Zone resolveZone(IncidentEvent event) {
 
-        if (event == null
-                || event.getId() == null
-                || event.getId().isBlank()
-                || event.getType() == null
-                || event.getType().isBlank()
-                || event.getZoneCode() == null
-                || event.getZoneCode().isBlank()
-                || event.getSeverity() < 0
-                || event.getSeverity() > 4) {
-
-            throw new IllegalArgumentException(
-                    "Los datos del incidente no son válidos");
+        if (event.hasZoneCode()) {
+            return zoneRepository.findById(event.getZoneCode())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "No existe la zona " + event.getZoneCode()));
         }
+
+        return zoneRepository
+                .findNearest(event.getLatitude(), event.getLongitude())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No hay ninguna zona con coordenadas"));
     }
 }
