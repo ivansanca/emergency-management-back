@@ -7,4 +7,5 @@ import lombok.NoArgsConstructor;
 public final class KafkaTopics {
 
     public static final String EMERGENCY_EVENTS = "emergency-events";
+    public static final String EMERGENCY_EVENTS_DLT = "emergency-events-dlt";
 }
