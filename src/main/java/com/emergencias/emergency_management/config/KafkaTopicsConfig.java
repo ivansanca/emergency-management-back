@@ -18,6 +18,26 @@ public class KafkaTopicsConfig {
         return topic(KafkaTopics.EMERGENCY_EVENTS_DLT);
     }
 
+    @Bean
+    public NewTopic incidentCreatedTopic() {
+        return topic(KafkaTopics.INCIDENT_CREATED);
+    }
+
+    @Bean
+    public NewTopic incidentRecommendationTopic() {
+        return topic(KafkaTopics.INCIDENT_RECOMMENDATION);
+    }
+
+    @Bean
+    public NewTopic resourceAssignedTopic() {
+        return topic(KafkaTopics.RESOURCE_ASSIGNED);
+    }
+
+    @Bean
+    public NewTopic incidentClosedTopic() {
+        return topic(KafkaTopics.INCIDENT_CLOSED);
+    }
+
     private NewTopic topic(String name) {
         return TopicBuilder.name(name)
                 .partitions(1)

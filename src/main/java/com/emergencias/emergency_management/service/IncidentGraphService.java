@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,19 +19,23 @@ public class IncidentGraphService {
     private final IncidentRepository incidentRepository;
     private final ZoneRepository zoneRepository;
 
-    public void save(IncidentEvent event) {
+    public IncidentSaveResult save(IncidentEvent event) {
         IncidentEventValidator.validate(event);
 
         Zone zone = resolveZone(event);
 
         Incident incident = new Incident(event, zone, Instant.now());
 
-        incidentRepository.findById(event.getId())
-                .map(Incident::getStatus)
+        Optional<Incident> existing =
+                incidentRepository.findById(event.getId());
+
+        existing.map(Incident::getStatus)
                 .filter(Objects::nonNull)
                 .ifPresent(incident::setStatus);
 
         incidentRepository.save(incident);
+
+        return new IncidentSaveResult(incident, existing.isEmpty());
     }
 
     private Zone resolveZone(IncidentEvent event) {

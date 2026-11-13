@@ -18,9 +18,11 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.never;
@@ -56,7 +58,7 @@ class IncidentGraphServiceTest {
                 .thenReturn(Optional.of(CABUERNIGA));
         Instant occurredAt = Instant.parse("2026-08-14T15:30:00Z");
 
-        incidentGraphService.save(IncidentEvent.builder()
+        IncidentSaveResult result = incidentGraphService.save(IncidentEvent.builder()
                 .id("incident-1")
                 .type("FOREST_FIRE")
                 .severity(3)
@@ -76,6 +78,8 @@ class IncidentGraphServiceTest {
         assertEquals(occurredAt, incident.getOccurredAt());
         assertEquals(IncidentSource.FIRMS, incident.getSource());
         assertNotNull(incident.getReceivedAt());
+        assertTrue(result.created());
+        assertSame(incident, result.incident());
     }
 
     @Test
@@ -145,7 +149,7 @@ class IncidentGraphServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(existing));
 
-        incidentGraphService.save(IncidentEvent.builder()
+        IncidentSaveResult result = incidentGraphService.save(IncidentEvent.builder()
                 .id("incident-1")
                 .type("FOREST_FIRE")
                 .severity(3)
@@ -153,6 +157,7 @@ class IncidentGraphServiceTest {
                 .build());
 
         Incident incident = savedIncident();
+        assertFalse(result.created());
         assertEquals(IncidentStatus.CLOSED, incident.getStatus());
         assertEquals(3, incident.getSeverity());
     }

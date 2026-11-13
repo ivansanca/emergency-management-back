@@ -6,6 +6,7 @@ import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.model.Zone;
+import com.emergencias.emergency_management.producer.IncidentNotificationProducer;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ResourceRepository;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -37,6 +39,9 @@ class IncidentLifecycleServiceTest {
 
     @Mock
     private DecisionService decisionService;
+
+    @Mock
+    private IncidentNotificationProducer incidentNotificationProducer;
 
     @InjectMocks
     private IncidentLifecycleService incidentLifecycleService;
@@ -70,6 +75,7 @@ class IncidentLifecycleServiceTest {
         assertEquals("resource-1", response.getResourceId());
         assertEquals("FOREST_ENGINE", response.getResourceType());
         assertEquals("2026-10-31T17:00:00Z", response.getAssignedAt());
+        verify(incidentNotificationProducer).resourceAssigned(response);
     }
 
     @Test
@@ -135,6 +141,7 @@ class IncidentLifecycleServiceTest {
 
         assertEquals("CLOSED", response.getStatus());
         assertEquals(2, response.getReleasedResources());
+        verify(incidentNotificationProducer).incidentClosed(response);
     }
 
     @Test
@@ -149,5 +156,6 @@ class IncidentLifecycleServiceTest {
         assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
         verify(incidentRepository, never())
                 .closeAndReleaseResources(anyString());
+        verify(incidentNotificationProducer, never()).incidentClosed(any());
     }
 }
