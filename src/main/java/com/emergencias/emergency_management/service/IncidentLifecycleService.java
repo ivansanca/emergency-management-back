@@ -5,6 +5,7 @@ import com.emergencias.emergency_management.dto.CloseIncidentResponse;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentStatus;
+import com.emergencias.emergency_management.producer.IncidentNotificationProducer;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class IncidentLifecycleService {
     private final IncidentRepository incidentRepository;
     private final ResourceRepository resourceRepository;
     private final DecisionService decisionService;
+    private final IncidentNotificationProducer incidentNotificationProducer;
 
     @Transactional
     public AssignmentResponse assign(String incidentId, String resourceId) {
@@ -73,13 +75,17 @@ public class IncidentLifecycleService {
         log.info("Recurso {} asignado al incidente {}",
                 resourceId, incidentId);
 
-        return AssignmentResponse.builder()
+        AssignmentResponse response = AssignmentResponse.builder()
                 .incidentId(incidentId)
                 .resourceId(resourceId)
                 .resourceName(resource.getName())
                 .resourceType(resourceType)
                 .assignedAt(assignedAt)
                 .build();
+
+        incidentNotificationProducer.resourceAssigned(response);
+
+        return response;
     }
 
     @Transactional
@@ -101,11 +107,15 @@ public class IncidentLifecycleService {
         log.info("Incidente {} cerrado, {} recursos liberados",
                 incidentId, releasedResources);
 
-        return CloseIncidentResponse.builder()
+        CloseIncidentResponse response = CloseIncidentResponse.builder()
                 .incidentId(incidentId)
                 .status(IncidentStatus.CLOSED.name())
                 .releasedResources(releasedResources)
                 .build();
+
+        incidentNotificationProducer.incidentClosed(response);
+
+        return response;
     }
 
     private Incident findIncident(String incidentId) {
