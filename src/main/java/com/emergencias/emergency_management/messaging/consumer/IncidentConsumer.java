@@ -1,7 +1,7 @@
-package com.emergencias.emergency_management.consumer;
+package com.emergencias.emergency_management.messaging.consumer;
 
-import com.emergencias.emergency_management.config.KafkaTopics;
-import com.emergencias.emergency_management.model.IncidentEvent;
+import com.emergencias.emergency_management.messaging.config.KafkaTopics;
+import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.service.IncidentProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

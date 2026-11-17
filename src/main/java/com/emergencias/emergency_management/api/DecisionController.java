@@ -1,10 +1,8 @@
-package com.emergencias.emergency_management.controller;
+package com.emergencias.emergency_management.api;
 
 import com.emergencias.emergency_management.dto.DecisionResponse;
 import com.emergencias.emergency_management.service.DecisionService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.web.bind.annotation.*;
 
 @RestController

@@ -1,4 +1,4 @@
-package com.emergencias.emergency_management.notification;
+package com.emergencias.emergency_management.messaging.event;
 
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentSource;

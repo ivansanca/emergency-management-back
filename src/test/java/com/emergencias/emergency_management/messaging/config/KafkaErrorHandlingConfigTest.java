@@ -1,6 +1,6 @@
-package com.emergencias.emergency_management.config;
+package com.emergencias.emergency_management.messaging.config;
 
-import com.emergencias.emergency_management.model.IncidentEvent;
+import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;

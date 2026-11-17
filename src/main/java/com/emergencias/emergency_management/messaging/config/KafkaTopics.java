@@ -1,4 +1,4 @@
-package com.emergencias.emergency_management.config;
+package com.emergencias.emergency_management.messaging.config;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

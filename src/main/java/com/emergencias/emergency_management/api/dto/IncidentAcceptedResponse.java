@@ -1,4 +1,4 @@
-package com.emergencias.emergency_management.dto;
+package com.emergencias.emergency_management.api.dto;
 
 import lombok.Builder;
 import lombok.Getter;

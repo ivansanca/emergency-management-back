@@ -1,7 +1,7 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.model.Incident;
-import com.emergencias.emergency_management.model.IncidentEvent;
 import com.emergencias.emergency_management.model.IncidentSource;
 import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.model.Zone;

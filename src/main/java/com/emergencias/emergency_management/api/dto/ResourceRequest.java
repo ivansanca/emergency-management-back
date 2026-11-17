@@ -1,4 +1,4 @@
-package com.emergencias.emergency_management.model;
+package com.emergencias.emergency_management.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

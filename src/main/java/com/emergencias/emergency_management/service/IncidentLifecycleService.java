@@ -2,10 +2,10 @@ package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.dto.AssignmentResponse;
 import com.emergencias.emergency_management.dto.CloseIncidentResponse;
+import com.emergencias.emergency_management.messaging.producer.IncidentNotificationProducer;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentStatus;
-import com.emergencias.emergency_management.producer.IncidentNotificationProducer;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
