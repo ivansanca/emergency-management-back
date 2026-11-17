@@ -10,6 +10,9 @@ import com.emergencias.emergency_management.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * Registration of emergency resources.
+ */
 @Service
 @RequiredArgsConstructor
 public class ResourceService {

@@ -9,6 +9,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Sends a message and waits for the broker to confirm it. Used where the
+ * caller needs to know that the message is safely stored in Kafka before
+ * carrying on.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class SynchronousSend {
 

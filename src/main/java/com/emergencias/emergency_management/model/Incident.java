@@ -9,6 +9,13 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.time.Instant;
 
+/**
+ * An emergency located in a zone.
+ * <p>
+ * {@code occurredAt} is when the emergency happened according to its source
+ * and {@code receivedAt} is when this service registered it. {@code notified}
+ * tells whether Kafka has confirmed the {@code incident-created} notification.
+ */
 @Node("Incident")
 @Getter
 @Setter

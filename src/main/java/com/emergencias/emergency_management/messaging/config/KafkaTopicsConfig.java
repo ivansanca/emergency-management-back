@@ -5,6 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
+/**
+ * Declares the topics so that they are created at startup when missing.
+ * Creation is idempotent. In production the topics would be provisioned by the
+ * infrastructure team instead.
+ */
 @Configuration
 public class KafkaTopicsConfig {
 

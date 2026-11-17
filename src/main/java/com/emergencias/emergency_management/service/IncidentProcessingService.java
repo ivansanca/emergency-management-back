@@ -7,6 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+/**
+ * Orchestrates what happens when an incident event arrives: registering the
+ * incident, notifying it and recommending resources.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -16,6 +20,15 @@ public class IncidentProcessingService {
     private final DecisionService decisionService;
     private final IncidentNotificationProducer incidentNotificationProducer;
 
+    /**
+     * The incident is marked as notified only after Kafka has confirmed the
+     * notification. If the service stops in between, the event is delivered
+     * again, the incident is found pending and the notification is sent then.
+     * Subscribers may therefore receive it twice, but never miss it.
+     * <p>
+     * The recommendation is best effort: if it fails, the error is logged and
+     * the incident stays registered.
+     */
     public void process(IncidentEvent event) {
         IncidentSaveResult result = incidentGraphService.save(event);
         Incident incident = result.incident();

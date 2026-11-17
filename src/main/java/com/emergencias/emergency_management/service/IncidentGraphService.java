@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Optional;
 
+/**
+ * Registers incidents in the graph.
+ */
 @Service
 @RequiredArgsConstructor
 public class IncidentGraphService {
@@ -21,6 +24,13 @@ public class IncidentGraphService {
     private final IncidentRepository incidentRepository;
     private final ZoneRepository zoneRepository;
 
+    /**
+     * Registers the incident described by the event.
+     * <p>
+     * An event whose id is already registered is ignored and the existing
+     * incident is returned untouched. Kafka may deliver an event more than
+     * once and clients may resend it, so registering has to be idempotent.
+     */
     public IncidentSaveResult save(IncidentEvent event) {
         IncidentEventValidator.validate(event);
 

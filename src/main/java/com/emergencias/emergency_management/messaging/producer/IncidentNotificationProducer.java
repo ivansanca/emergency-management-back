@@ -16,6 +16,10 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import tools.jackson.databind.json.JsonMapper;
 
+/**
+ * Publishes the notifications that external services (emergency coordination,
+ * hospitals) can subscribe to. The service does not know who is listening.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,6 +28,10 @@ public class IncidentNotificationProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final JsonMapper jsonMapper;
 
+    /**
+     * Waits for the confirmation of Kafka, because the incident is marked as
+     * notified right afterwards.
+     */
     public void incidentCreated(Incident incident) {
         SynchronousSend.sendAndWait(
                 kafkaTemplate,
@@ -55,6 +63,10 @@ public class IncidentNotificationProducer {
                 closure);
     }
 
+    /**
+     * Within a transaction the notification is sent only after the commit, so
+     * that nothing is announced if the operation is rolled back.
+     */
     private void publish(
             String topic,
             NotificationType eventType,

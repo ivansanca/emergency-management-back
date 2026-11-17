@@ -12,6 +12,13 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 import tools.jackson.core.JacksonException;
 
+/**
+ * Error handling of the Kafka listeners.
+ * <p>
+ * Invalid events are sent straight to the dead letter topic, because retrying
+ * them would fail again. Any other failure is treated as temporary (for
+ * instance Neo4j being down) and is retried before the event is given up.
+ */
 @Configuration
 public class KafkaErrorHandlingConfig {
 
@@ -39,6 +46,10 @@ public class KafkaErrorHandlingConfig {
         return errorHandler;
     }
 
+    /**
+     * Partition -1 lets Kafka choose the partition, so the dead letter topic
+     * does not need as many partitions as the source topic.
+     */
     static TopicPartition deadLetterDestination(
             ConsumerRecord<?, ?> record,
             Exception exception) {

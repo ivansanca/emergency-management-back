@@ -7,6 +7,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.json.JsonMapper;
 
+/**
+ * Publishes incoming incident events to the {@code emergency-events} topic and
+ * waits until Kafka confirms them.
+ */
 @Service
 @RequiredArgsConstructor
 public class IncidentProducer {

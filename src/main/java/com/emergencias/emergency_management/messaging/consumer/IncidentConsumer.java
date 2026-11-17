@@ -9,6 +9,13 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
+/**
+ * Consumes incident events from Kafka, whatever their source, and hands them
+ * over for processing.
+ * <p>
+ * Exceptions are deliberately not caught here: the error handler decides
+ * whether to retry the event or to send it to the dead letter topic.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j

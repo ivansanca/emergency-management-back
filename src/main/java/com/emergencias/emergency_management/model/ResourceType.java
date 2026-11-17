@@ -6,6 +6,10 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 
+/**
+ * Type of resource, such as {@code FOREST_ENGINE}. Types flagged as aerial in
+ * the graph are dispatched without road routing.
+ */
 @Node("ResourceType")
 @Getter
 @NoArgsConstructor

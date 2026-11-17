@@ -17,6 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Decisions an operator takes on an incident: assigning resources and closing
+ * it. The system recommends; a person decides.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

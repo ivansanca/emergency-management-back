@@ -3,6 +3,9 @@ package com.emergencias.emergency_management.messaging.config;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Names of the Kafka topics used by the service.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class KafkaTopics {
 

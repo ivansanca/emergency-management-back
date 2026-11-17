@@ -6,6 +6,10 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 
+/**
+ * A municipality of Cantabria, identified by its INE code. Its coordinates are
+ * those of its capital.
+ */
 @Node("Zone")
 @Getter
 @NoArgsConstructor

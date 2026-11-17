@@ -11,6 +11,10 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Translates domain exceptions into HTTP responses in Problem Details format
+ * (RFC 9457), so that services do not need to know about HTTP.
+ */
 @RestControllerAdvice
 @Slf4j
 public class ApiExceptionHandler {

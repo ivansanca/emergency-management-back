@@ -5,6 +5,11 @@ import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Validation shared by the REST adapter and the Kafka consumer. Other
+ * producers can write to the topic, so the consumer cannot rely on the checks
+ * made by the REST API.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class IncidentEventValidator {
 
@@ -50,6 +55,10 @@ public final class IncidentEventValidator {
         }
     }
 
+    /**
+     * Bounding box around Cantabria with some margin. It is a coarse filter:
+     * it also contains border areas of the neighbouring provinces.
+     */
     private static boolean insideCantabria(double latitude, double longitude) {
         return latitude >= MIN_LATITUDE && latitude <= MAX_LATITUDE
                 && longitude >= MIN_LONGITUDE && longitude <= MAX_LONGITUDE;

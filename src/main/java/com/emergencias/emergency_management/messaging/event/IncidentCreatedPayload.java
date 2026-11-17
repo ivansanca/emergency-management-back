@@ -9,6 +9,10 @@ import lombok.Getter;
 
 import java.time.Instant;
 
+/**
+ * Payload of the {@code incident-created} notification. It is a flat copy of
+ * the incident, so that the graph entity is never exposed to subscribers.
+ */
 @Getter
 @Builder
 public class IncidentCreatedPayload {

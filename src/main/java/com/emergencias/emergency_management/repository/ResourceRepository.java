@@ -9,10 +9,25 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Queries that search, route and assign resources. They hold the core of the
+ * recommendation logic.
+ */
 public interface ResourceRepository
         extends Neo4jRepository<EmergencyResource, String> {
 
 
+    /**
+     * Ground resources that can reach the incident within the given limits.
+     * <p>
+     * Every road path of up to five hops between the zone of the incident and
+     * the zone of each resource is explored. Paths through a closed road are
+     * discarded and the fastest remaining one is kept. A resource based in the
+     * zone of the incident is at distance zero.
+     * <p>
+     * Known limitation: routes that need more than five hops are not found. A
+     * weighted shortest path algorithm (Dijkstra) would remove it.
+     */
     @Query("""
             MATCH (i:Incident {id: $incidentId})-[:OCCURRED_IN]->(origin:Zone)
             MATCH (r:Resource)-[:HAS_TYPE]->(rt:ResourceType)
@@ -104,6 +119,10 @@ public interface ResourceRepository
             @Param("maxDistanceKm") double maxDistanceKm,
             @Param("maxTravelTimeMinutes") double maxTravelTimeMinutes);
 
+    /**
+     * Available aerial resources. They are dispatched without road routing, so
+     * they come without distance, travel time or route.
+     */
     @Query("""
         MATCH (r:Resource)-[:HAS_TYPE]->(rt:ResourceType)
         MATCH (r)-[:LOCATED_IN]->(z:Zone)
@@ -122,6 +141,15 @@ public interface ResourceRepository
     List<ResourceCandidateRow> findAvailableAerialResources(
             @Param("eligibleTypes") List<String> eligibleTypes);
 
+    /**
+     * Assigns the resource if it is still available and the incident is still
+     * open. Returns the assignment time, or empty when the assignment is no
+     * longer possible.
+     * <p>
+     * The write on {@code _lock} takes the write lock of both nodes before the
+     * conditions are read. Without it, two simultaneous requests could both
+     * see the resource as available and assign it twice.
+     */
     @Query("""
         MATCH (i:Incident {id: $incidentId})
         MATCH (r:Resource {id: $resourceId})

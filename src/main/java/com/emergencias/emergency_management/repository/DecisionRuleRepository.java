@@ -8,9 +8,16 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * Queries over the decision rules.
+ */
 public interface DecisionRuleRepository
         extends Neo4jRepository<DecisionRule, String> {
 
+    /**
+     * Resource types required by the active rules that match the type and
+     * severity of the incident, one row per type.
+     */
     @Query("""
         MATCH (i:Incident {id: $incidentId})
         MATCH (rule:DecisionRule)

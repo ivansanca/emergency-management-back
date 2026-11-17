@@ -12,6 +12,11 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+/**
+ * Contract of the events of the {@code emergency-events} topic and body of
+ * {@code POST /api/incidents}. The location is given by the zone code, by the
+ * coordinates or by both.
+ */
 @Getter
 @Setter
 @Builder

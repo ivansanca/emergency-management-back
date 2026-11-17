@@ -15,6 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+/**
+ * REST entry point for incidents reported by an operator.
+ * <p>
+ * It does not process the incident. It validates the event, publishes it to
+ * Kafka and answers 202 once the broker has confirmed it, exactly as any other
+ * event source would do. Events received here are always marked as manual.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/incidents")

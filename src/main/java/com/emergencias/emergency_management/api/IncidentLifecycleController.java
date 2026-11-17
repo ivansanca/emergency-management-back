@@ -9,6 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST endpoints for the decisions an operator takes on an incident: assigning
+ * resources and closing it.
+ */
 @RestController
 @RequestMapping("/api/incidents")
 @RequiredArgsConstructor

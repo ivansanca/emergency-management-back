@@ -7,6 +7,10 @@ import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
+/**
+ * A vehicle or piece of equipment based in a zone. It is not available while
+ * it is assigned to an open incident.
+ */
 @Node("Resource")
 @Getter
 @Setter

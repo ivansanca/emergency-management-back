@@ -28,6 +28,14 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+/**
+ * Deterministic recommendation engine.
+ * <p>
+ * It selects the rule that applies to the incident and, for each requirement
+ * of the rule, picks the fastest available resources. Requirements that cannot
+ * be covered are reported instead of failing. The same incident over the same
+ * graph always produces the same recommendation.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
