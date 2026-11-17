@@ -1,4 +1,4 @@
-package com.emergencias.emergency_management.config;
+package com.emergencias.emergency_management.messaging.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;

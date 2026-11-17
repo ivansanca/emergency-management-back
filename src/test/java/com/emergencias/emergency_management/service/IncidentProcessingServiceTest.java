@@ -1,10 +1,10 @@
 package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.dto.DecisionResponse;
+import com.emergencias.emergency_management.messaging.event.IncidentEvent;
+import com.emergencias.emergency_management.messaging.producer.IncidentNotificationProducer;
 import com.emergencias.emergency_management.model.Incident;
-import com.emergencias.emergency_management.model.IncidentEvent;
 import com.emergencias.emergency_management.model.IncidentStatus;
-import com.emergencias.emergency_management.producer.IncidentNotificationProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

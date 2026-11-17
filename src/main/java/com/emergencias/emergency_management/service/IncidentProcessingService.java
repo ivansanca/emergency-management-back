@@ -1,7 +1,7 @@
 package com.emergencias.emergency_management.service;
 
-import com.emergencias.emergency_management.model.IncidentEvent;
-import com.emergencias.emergency_management.producer.IncidentNotificationProducer;
+import com.emergencias.emergency_management.messaging.event.IncidentEvent;
+import com.emergencias.emergency_management.messaging.producer.IncidentNotificationProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

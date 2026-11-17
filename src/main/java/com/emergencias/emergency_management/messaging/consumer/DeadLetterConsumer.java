@@ -1,6 +1,6 @@
-package com.emergencias.emergency_management.consumer;
+package com.emergencias.emergency_management.messaging.consumer;
 
-import com.emergencias.emergency_management.config.KafkaTopics;
+import com.emergencias.emergency_management.messaging.config.KafkaTopics;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;

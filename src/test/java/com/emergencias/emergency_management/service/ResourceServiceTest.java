@@ -1,7 +1,7 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.api.dto.ResourceRequest;
 import com.emergencias.emergency_management.model.EmergencyResource;
-import com.emergencias.emergency_management.model.ResourceRequest;
 import com.emergencias.emergency_management.model.Zone;
 import com.emergencias.emergency_management.repository.ResourceRepository;
 import com.emergencias.emergency_management.repository.ZoneRepository;

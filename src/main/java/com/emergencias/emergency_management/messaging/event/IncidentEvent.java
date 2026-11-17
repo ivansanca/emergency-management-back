@@ -1,5 +1,6 @@
-package com.emergencias.emergency_management.model;
+package com.emergencias.emergency_management.messaging.event;
 
+import com.emergencias.emergency_management.model.IncidentSource;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

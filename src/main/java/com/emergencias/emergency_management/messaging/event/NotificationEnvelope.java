@@ -1,4 +1,4 @@
-package com.emergencias.emergency_management.notification;
+package com.emergencias.emergency_management.messaging.event;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

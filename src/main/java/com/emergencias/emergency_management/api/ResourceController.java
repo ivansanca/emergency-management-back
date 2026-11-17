@@ -1,13 +1,10 @@
-package com.emergencias.emergency_management.controller;
+package com.emergencias.emergency_management.api;
 
+import com.emergencias.emergency_management.api.dto.ResourceRequest;
 import com.emergencias.emergency_management.model.EmergencyResource;
-import com.emergencias.emergency_management.model.ResourceRequest;
 import com.emergencias.emergency_management.service.ResourceService;
-
 import jakarta.validation.Valid;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 

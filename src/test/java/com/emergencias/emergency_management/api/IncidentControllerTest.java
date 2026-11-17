@@ -1,9 +1,9 @@
-package com.emergencias.emergency_management.controller;
+package com.emergencias.emergency_management.api;
 
-import com.emergencias.emergency_management.dto.IncidentAcceptedResponse;
-import com.emergencias.emergency_management.model.IncidentEvent;
+import com.emergencias.emergency_management.api.dto.IncidentAcceptedResponse;
+import com.emergencias.emergency_management.messaging.event.IncidentEvent;
+import com.emergencias.emergency_management.messaging.producer.IncidentProducer;
 import com.emergencias.emergency_management.model.IncidentSource;
-import com.emergencias.emergency_management.producer.IncidentProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

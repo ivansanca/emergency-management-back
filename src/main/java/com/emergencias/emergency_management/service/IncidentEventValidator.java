@@ -1,6 +1,6 @@
 package com.emergencias.emergency_management.service;
 
-import com.emergencias.emergency_management.model.IncidentEvent;
+import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

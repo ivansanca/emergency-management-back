@@ -1,8 +1,8 @@
-package com.emergencias.emergency_management.controller;
+package com.emergencias.emergency_management.api;
 
+import com.emergencias.emergency_management.api.dto.AssignmentRequest;
 import com.emergencias.emergency_management.dto.AssignmentResponse;
 import com.emergencias.emergency_management.dto.CloseIncidentResponse;
-import com.emergencias.emergency_management.model.AssignmentRequest;
 import com.emergencias.emergency_management.service.IncidentLifecycleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.emergencias.emergency_management.notification;
+package com.emergencias.emergency_management.messaging.event;
 
 public enum NotificationType {
     INCIDENT_CREATED,

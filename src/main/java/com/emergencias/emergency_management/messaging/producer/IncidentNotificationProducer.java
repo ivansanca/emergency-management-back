@@ -1,13 +1,13 @@
-package com.emergencias.emergency_management.producer;
+package com.emergencias.emergency_management.messaging.producer;
 
-import com.emergencias.emergency_management.config.KafkaTopics;
 import com.emergencias.emergency_management.dto.AssignmentResponse;
 import com.emergencias.emergency_management.dto.CloseIncidentResponse;
 import com.emergencias.emergency_management.dto.DecisionResponse;
+import com.emergencias.emergency_management.messaging.config.KafkaTopics;
+import com.emergencias.emergency_management.messaging.event.IncidentCreatedPayload;
+import com.emergencias.emergency_management.messaging.event.NotificationEnvelope;
+import com.emergencias.emergency_management.messaging.event.NotificationType;
 import com.emergencias.emergency_management.model.Incident;
-import com.emergencias.emergency_management.notification.IncidentCreatedPayload;
-import com.emergencias.emergency_management.notification.NotificationEnvelope;
-import com.emergencias.emergency_management.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

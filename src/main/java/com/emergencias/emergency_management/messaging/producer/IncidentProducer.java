@@ -1,7 +1,7 @@
-package com.emergencias.emergency_management.producer;
+package com.emergencias.emergency_management.messaging.producer;
 
-import com.emergencias.emergency_management.config.KafkaTopics;
-import com.emergencias.emergency_management.model.IncidentEvent;
+import com.emergencias.emergency_management.messaging.config.KafkaTopics;
+import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

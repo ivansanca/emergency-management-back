@@ -50,24 +50,6 @@ public class Incident {
         this.zone = zone;
     }
 
-    public Incident(IncidentEvent event, Zone zone, Instant receivedAt) {
-        this.id = event.getId();
-        this.type = event.getType();
-        this.severity = event.getSeverity();
-        this.description = event.getDescription();
-        this.status = IncidentStatus.ACTIVE;
-        this.latitude = event.getLatitude();
-        this.longitude = event.getLongitude();
-        this.receivedAt = receivedAt;
-        this.occurredAt = event.getOccurredAt() != null
-                ? event.getOccurredAt()
-                : receivedAt;
-        this.source = event.getSource() != null
-                ? event.getSource()
-                : IncidentSource.MANUAL;
-        this.zone = zone;
-    }
-
     public boolean isClosed() {
         return status == IncidentStatus.CLOSED;
     }
