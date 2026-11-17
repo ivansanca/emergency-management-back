@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.messaging.config;
 
+import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +33,7 @@ public class KafkaErrorHandlingConfig {
                 new FixedBackOff(RETRY_INTERVAL_MS, MAX_RETRIES));
 
         errorHandler.addNotRetryableExceptions(
-                IllegalArgumentException.class,
+                InvalidIncidentEventException.class,
                 JacksonException.class);
 
         return errorHandler;

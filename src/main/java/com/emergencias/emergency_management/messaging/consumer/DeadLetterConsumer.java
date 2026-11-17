@@ -14,7 +14,9 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class DeadLetterConsumer {
 
-    @KafkaListener(topics = KafkaTopics.EMERGENCY_EVENTS_DLT)
+    @KafkaListener(
+            topics = KafkaTopics.EMERGENCY_EVENTS_DLT,
+            groupId = "emergency-management-dlt")
     public void consume(ConsumerRecord<String, String> record) {
         log.warn("Evento rechazado desde {}. Motivo: {} ({}). Mensaje: {}",
                 header(record, KafkaHeaders.DLT_ORIGINAL_TOPIC),

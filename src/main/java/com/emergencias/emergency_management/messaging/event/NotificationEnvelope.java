@@ -11,6 +11,9 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class NotificationEnvelope<T> {
 
+    public static final int CURRENT_SCHEMA_VERSION = 1;
+
+    private final int schemaVersion;
     private final String eventId;
     private final NotificationType eventType;
     private final Instant emittedAt;
@@ -23,6 +26,7 @@ public class NotificationEnvelope<T> {
             T payload) {
 
         return new NotificationEnvelope<>(
+                CURRENT_SCHEMA_VERSION,
                 UUID.randomUUID().toString(),
                 eventType,
                 Instant.now(),

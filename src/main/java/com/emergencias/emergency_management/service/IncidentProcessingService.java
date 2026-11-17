@@ -2,6 +2,7 @@ package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.messaging.producer.IncidentNotificationProducer;
+import com.emergencias.emergency_management.model.Incident;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,14 +18,16 @@ public class IncidentProcessingService {
 
     public void process(IncidentEvent event) {
         IncidentSaveResult result = incidentGraphService.save(event);
+        Incident incident = result.incident();
 
-        if (!result.created()) {
-            log.info("Incidente {} ya registrado: se actualiza sin "
-                    + "volver a notificar", event.getId());
+        if (!result.created() && !pendingNotification(incident)) {
+            log.info("Incidente {} ya registrado: se ignora el duplicado",
+                    event.getId());
             return;
         }
 
-        incidentNotificationProducer.incidentCreated(result.incident());
+        incidentNotificationProducer.incidentCreated(incident);
+        incidentGraphService.markNotified(incident.getId());
 
         try {
             incidentNotificationProducer.incidentRecommendation(
@@ -33,5 +36,9 @@ public class IncidentProcessingService {
             log.error("Incidente {} registrado, pero no se pudo calcular "
                     + "su recomendación", event.getId(), exception);
         }
+    }
+
+    private boolean pendingNotification(Incident incident) {
+        return Boolean.FALSE.equals(incident.getNotified());
     }
 }

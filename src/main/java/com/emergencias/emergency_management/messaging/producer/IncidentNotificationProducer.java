@@ -25,10 +25,13 @@ public class IncidentNotificationProducer {
     private final JsonMapper jsonMapper;
 
     public void incidentCreated(Incident incident) {
-        publish(KafkaTopics.INCIDENT_CREATED,
-                NotificationType.INCIDENT_CREATED,
+        SynchronousSend.sendAndWait(
+                kafkaTemplate,
+                KafkaTopics.INCIDENT_CREATED,
                 incident.getId(),
-                IncidentCreatedPayload.from(incident));
+                toMessage(NotificationType.INCIDENT_CREATED,
+                        incident.getId(),
+                        IncidentCreatedPayload.from(incident)));
     }
 
     public void incidentRecommendation(DecisionResponse decision) {
@@ -58,8 +61,7 @@ public class IncidentNotificationProducer {
             String incidentId,
             Object payload) {
 
-        String message = jsonMapper.writeValueAsString(
-                NotificationEnvelope.of(eventType, incidentId, payload));
+        String message = toMessage(eventType, incidentId, payload);
 
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(
@@ -73,6 +75,15 @@ public class IncidentNotificationProducer {
         }
 
         send(topic, incidentId, message);
+    }
+
+    private String toMessage(
+            NotificationType eventType,
+            String incidentId,
+            Object payload) {
+
+        return jsonMapper.writeValueAsString(
+                NotificationEnvelope.of(eventType, incidentId, payload));
     }
 
     private void send(String topic, String incidentId, String message) {

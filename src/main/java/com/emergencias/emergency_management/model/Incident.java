@@ -27,6 +27,7 @@ public class Incident {
     private Instant occurredAt;
     private Instant receivedAt;
     private IncidentSource source;
+    private Boolean notified;
 
     @Relationship(
             type = "OCCURRED_IN",

@@ -19,6 +19,10 @@ import java.time.Instant;
 @AllArgsConstructor
 public class IncidentEvent {
 
+    public static final int CURRENT_SCHEMA_VERSION = 1;
+
+    private Integer schemaVersion;
+
     private String id;
 
     @NotBlank

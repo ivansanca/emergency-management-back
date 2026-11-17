@@ -18,10 +18,10 @@ public class IncidentProducer {
 
         String message = jsonMapper.writeValueAsString(event);
 
-        kafkaTemplate.send(
+        SynchronousSend.sendAndWait(
+                kafkaTemplate,
                 KafkaTopics.EMERGENCY_EVENTS,
                 event.getId(),
-                message
-        );
+                message);
     }
 }

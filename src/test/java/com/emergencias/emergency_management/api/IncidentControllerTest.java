@@ -1,6 +1,7 @@
 package com.emergencias.emergency_management.api;
 
 import com.emergencias.emergency_management.api.dto.IncidentAcceptedResponse;
+import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.messaging.producer.IncidentProducer;
 import com.emergencias.emergency_management.model.IncidentSource;
@@ -11,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -31,7 +31,7 @@ class IncidentControllerTest {
     private IncidentController incidentController;
 
     @Test
-    void createGeneratesUuidWhenIdIsMissing() {
+    void createGeneratesUuidAndAppliesDefaults() {
         IncidentEvent event = IncidentEvent.builder()
                 .type("FOREST_FIRE")
                 .severity(3)
@@ -47,25 +47,27 @@ class IncidentControllerTest {
         assertDoesNotThrow(() -> UUID.fromString(generatedId));
         assertEquals(generatedId, event.getId());
         assertEquals(IncidentSource.MANUAL, event.getSource());
+        assertEquals(IncidentEvent.CURRENT_SCHEMA_VERSION,
+                event.getSchemaVersion());
         verify(incidentProducer).publish(event);
     }
 
     @Test
-    void createKeepsIdAndSourceWhenProvided() {
+    void createKeepsIdAndAlwaysMarksSourceAsManual() {
         IncidentEvent event = IncidentEvent.builder()
                 .id("FIRE-001")
                 .type("FOREST_FIRE")
                 .severity(3)
                 .latitude(43.2265)
                 .longitude(-4.3016)
-                .source(IncidentSource.SIMULATOR)
+                .source(IncidentSource.FIRMS)
                 .build();
 
         ResponseEntity<IncidentAcceptedResponse> response =
                 incidentController.create(event);
 
         assertEquals("FIRE-001", response.getBody().getIncidentId());
-        assertEquals(IncidentSource.SIMULATOR, event.getSource());
+        assertEquals(IncidentSource.MANUAL, event.getSource());
         verify(incidentProducer).publish(event);
     }
 
@@ -76,11 +78,10 @@ class IncidentControllerTest {
                 .severity(3)
                 .build();
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                InvalidIncidentEventException.class,
                 () -> incidentController.create(event));
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         verifyNoInteractions(incidentProducer);
     }
 }

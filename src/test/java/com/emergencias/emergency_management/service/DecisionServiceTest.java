@@ -4,6 +4,7 @@ import com.emergencias.emergency_management.config.DecisionProperties;
 import com.emergencias.emergency_management.dto.DecisionResponse;
 import com.emergencias.emergency_management.dto.ResourceRecommendation;
 import com.emergencias.emergency_management.dto.ResourceShortfall;
+import com.emergencias.emergency_management.exception.NotFoundException;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.repository.DecisionRuleRepository;
@@ -16,8 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -80,11 +79,10 @@ class DecisionServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.empty());
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                NotFoundException.class,
                 () -> decisionService.recommend("incident-1"));
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         verifyNoInteractions(decisionRuleRepository, resourceRepository);
     }
 

@@ -4,6 +4,7 @@ import com.emergencias.emergency_management.config.DecisionProperties;
 import com.emergencias.emergency_management.dto.DecisionResponse;
 import com.emergencias.emergency_management.dto.ResourceRecommendation;
 import com.emergencias.emergency_management.dto.ResourceShortfall;
+import com.emergencias.emergency_management.exception.NotFoundException;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.repository.DecisionRuleRepository;
 import com.emergencias.emergency_management.repository.IncidentRepository;
@@ -12,10 +13,8 @@ import com.emergencias.emergency_management.repository.projection.ApplicableRule
 import com.emergencias.emergency_management.repository.projection.ResourceCandidateRow;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,8 +42,7 @@ public class DecisionService {
     public DecisionResponse recommend(String incidentId) {
 
         Incident incident = incidentRepository.findById(incidentId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
+                .orElseThrow(() -> new NotFoundException(
                         "No existe el incidente " + incidentId));
 
         List<ApplicableRuleRow> applicableRules =

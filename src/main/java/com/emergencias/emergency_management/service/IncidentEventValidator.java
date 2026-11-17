@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -20,23 +21,31 @@ public final class IncidentEventValidator {
                 || event.getSeverity() < 0
                 || event.getSeverity() > 4) {
 
-            throw new IllegalArgumentException(
+            throw new InvalidIncidentEventException(
                     "Los datos del incidente no son válidos");
         }
 
+        if (event.getSchemaVersion() != null
+                && event.getSchemaVersion() != IncidentEvent.CURRENT_SCHEMA_VERSION) {
+
+            throw new InvalidIncidentEventException(
+                    "Versión de esquema no soportada: "
+                            + event.getSchemaVersion());
+        }
+
         if ((event.getLatitude() == null) != (event.getLongitude() == null)) {
-            throw new IllegalArgumentException(
+            throw new InvalidIncidentEventException(
                     "Hay que indicar latitud y longitud a la vez");
         }
 
         if (!event.hasZoneCode() && !event.hasCoordinates()) {
-            throw new IllegalArgumentException(
+            throw new InvalidIncidentEventException(
                     "Hay que indicar el código de zona o las coordenadas");
         }
 
         if (event.hasCoordinates() && !insideCantabria(
                 event.getLatitude(), event.getLongitude())) {
-            throw new IllegalArgumentException(
+            throw new InvalidIncidentEventException(
                     "Las coordenadas están fuera de Cantabria");
         }
     }

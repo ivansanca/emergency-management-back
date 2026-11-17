@@ -22,4 +22,13 @@ public interface IncidentRepository
         """)
     Long closeAndReleaseResources(
             @Param("incidentId") String incidentId);
+
+    @Query("""
+        MATCH (i:Incident {id: $incidentId})
+        SET i.notified = true
+
+        RETURN count(i)
+        """)
+    Long markNotified(
+            @Param("incidentId") String incidentId);
 }

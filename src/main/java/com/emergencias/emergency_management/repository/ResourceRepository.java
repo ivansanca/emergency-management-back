@@ -125,7 +125,12 @@ public interface ResourceRepository
     @Query("""
         MATCH (i:Incident {id: $incidentId})
         MATCH (r:Resource {id: $resourceId})
+        SET i._lock = true, r._lock = true
+        REMOVE i._lock, r._lock
+
+        WITH i, r
         WHERE r.available = true
+          AND coalesce(i.status, 'ACTIVE') <> 'CLOSED'
         SET r.available = false
         CREATE (r)-[a:ASSIGNED_TO {assignedAt: datetime()}]->(i)
         RETURN toString(a.assignedAt)

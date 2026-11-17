@@ -2,6 +2,8 @@ package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.dto.AssignmentResponse;
 import com.emergencias.emergency_management.dto.CloseIncidentResponse;
+import com.emergencias.emergency_management.exception.ConflictException;
+import com.emergencias.emergency_management.exception.NotFoundException;
 import com.emergencias.emergency_management.messaging.producer.IncidentNotificationProducer;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Incident;
@@ -10,10 +12,8 @@ import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -33,19 +33,16 @@ public class IncidentLifecycleService {
         Incident incident = findIncident(incidentId);
 
         if (incident.isClosed()) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+            throw new ConflictException(
                     "El incidente " + incidentId + " está cerrado");
         }
 
         EmergencyResource resource = resourceRepository.findById(resourceId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
+                .orElseThrow(() -> new NotFoundException(
                         "No existe el recurso " + resourceId));
 
         if (!resource.isAvailable()) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+            throw new ConflictException(
                     "El recurso " + resourceId + " no está disponible");
         }
 
@@ -57,8 +54,7 @@ public class IncidentLifecycleService {
                 decisionService.eligibleResourceTypes(incidentId);
 
         if (!eligibleTypes.contains(resourceType)) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+            throw new ConflictException(
                     "El tipo de recurso " + resourceType
                             + " no es compatible con el incidente "
                             + incidentId + ". Tipos admitidos: "
@@ -67,8 +63,7 @@ public class IncidentLifecycleService {
 
         String assignedAt = resourceRepository
                 .assignToIncident(resourceId, incidentId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.CONFLICT,
+                .orElseThrow(() -> new ConflictException(
                         "El recurso " + resourceId
                                 + " ha dejado de estar disponible"));
 
@@ -94,8 +89,7 @@ public class IncidentLifecycleService {
         Incident incident = findIncident(incidentId);
 
         if (incident.isClosed()) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+            throw new ConflictException(
                     "El incidente " + incidentId + " ya está cerrado");
         }
 
@@ -120,8 +114,7 @@ public class IncidentLifecycleService {
 
     private Incident findIncident(String incidentId) {
         return incidentRepository.findById(incidentId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
+                .orElseThrow(() -> new NotFoundException(
                         "No existe el incidente " + incidentId));
     }
 }
