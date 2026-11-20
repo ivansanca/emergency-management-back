@@ -42,6 +42,15 @@ public class IncidentProcessingService {
         incidentNotificationProducer.incidentCreated(incident);
         incidentGraphService.markNotified(incident.getId());
 
+        if (result.created()) {
+            log.info("Incidente registrado y notificado: {} ({}, gravedad {})",
+                    incident.getId(), incident.getType(),
+                    incident.getSeverity());
+        } else {
+            log.info("Incidente {} ya registrado: se envía la notificación "
+                    + "pendiente", incident.getId());
+        }
+
         try {
             incidentNotificationProducer.incidentRecommendation(
                     decisionService.recommend(event.getId()));
