@@ -103,7 +103,9 @@ final class TestGraph {
             MATCH (z:Zone {ineCode: $zone})
             CREATE (:Incident {id: $id, type: 'FOREST_FIRE',
                                severity: $severity, status: 'ACTIVE',
-                               notified: true})-[:OCCURRED_IN]->(z)
+                               source: 'MANUAL', occurredAt: datetime(),
+                               receivedAt: datetime(), notified: true})
+                   -[:OCCURRED_IN]->(z)
             """, Map.of("zone", ORIGIN_ZONE, "id", incidentId,
                 "severity", severity));
     }

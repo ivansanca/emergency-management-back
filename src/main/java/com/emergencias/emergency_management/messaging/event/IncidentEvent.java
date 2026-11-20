@@ -4,6 +4,7 @@ import com.emergencias.emergency_management.model.IncidentSource;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,9 +34,10 @@ public class IncidentEvent {
     @NotBlank
     private String type;
 
+    @NotNull
     @Min(0)
     @Max(4)
-    private int severity;
+    private Integer severity;
 
     private String zoneCode;
 

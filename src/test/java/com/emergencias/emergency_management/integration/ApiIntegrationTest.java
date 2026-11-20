@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -95,6 +96,63 @@ class ApiIntegrationTest {
         assertEquals(400, response.statusCode());
         assertEquals("Hay que indicar el código de zona o las coordenadas",
                 detail(response));
+    }
+
+    @Test
+    void incidentWithoutSeverityIsRejected() throws Exception {
+        HttpResponse<String> response = post("/api/incidents", """
+                {"type": "FOREST_FIRE", "zoneCode": "00001"}
+                """);
+
+        assertEquals(400, response.statusCode());
+    }
+
+    @Test
+    void incidentWithoutApplicableRuleIsRejected() throws Exception {
+        HttpResponse<String> response = post("/api/incidents", """
+                {"type": "FOREST_FIRE", "severity": 4, "zoneCode": "00001"}
+                """);
+
+        assertEquals(400, response.statusCode());
+        assertEquals("No hay ninguna regla activa para FOREST_FIRE con gravedad 4",
+                detail(response));
+    }
+
+    @Test
+    void resourceIsRegisteredAvailableByDefault() throws Exception {
+        HttpResponse<String> response = post("/api/resources", """
+                {"id": "NEW-ENGINE", "name": "Autobomba nueva",
+                 "type": "RURAL_ENGINE", "zoneCode": "00002"}
+                """);
+
+        assertEquals(201, response.statusCode());
+        JsonNode body = jsonMapper.readTree(response.body());
+        assertTrue(body.get("available").asBoolean());
+        assertEquals("Paso", body.get("zoneName").asString());
+    }
+
+    @Test
+    void resourceWithUnknownTypeIsRejected() throws Exception {
+        HttpResponse<String> response = post("/api/resources", """
+                {"id": "NEW-ENGINE", "name": "Autobomba nueva",
+                 "type": "RURAL_ENIGNE", "zoneCode": "00002"}
+                """);
+
+        assertEquals(400, response.statusCode());
+        assertEquals("No existe el tipo de recurso RURAL_ENIGNE",
+                detail(response));
+    }
+
+    @Test
+    void registeringAResourceKeepsTheAerialFlagOfItsType() throws Exception {
+        post("/api/resources", """
+                {"id": "NEW-HELI", "name": "Helicoptero nuevo",
+                 "type": "AERIAL_UNIT", "zoneCode": "00006"}
+                """);
+
+        assertTrue(new TestGraph(neo4jClient).flag(
+                "MATCH (t:ResourceType {name: 'AERIAL_UNIT'}) RETURN t.aerial",
+                Map.of()));
     }
 
     @Test

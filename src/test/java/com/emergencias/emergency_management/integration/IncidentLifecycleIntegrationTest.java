@@ -96,6 +96,40 @@ class IncidentLifecycleIntegrationTest {
     }
 
     @Test
+    void simultaneousClosesOnlySucceedOnce() throws Exception {
+        int requests = 8;
+        ExecutorService executor = Executors.newFixedThreadPool(requests);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Future<CloseIncidentResponse>> results = new ArrayList<>();
+
+        try {
+            for (int i = 0; i < requests; i++) {
+                results.add(executor.submit(() -> {
+                    start.await();
+                    return incidentLifecycleService.close(
+                            TestGraph.INCIDENT_ID);
+                }));
+            }
+            start.countDown();
+
+            int succeeded = 0;
+            for (Future<CloseIncidentResponse> result : results) {
+                try {
+                    result.get();
+                    succeeded++;
+                } catch (ExecutionException exception) {
+                    assertInstanceOf(
+                            ConflictException.class, exception.getCause());
+                }
+            }
+
+            assertEquals(1, succeeded);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
     void simultaneousAssignmentsOfTheSameResourceOnlySucceedOnce()
             throws Exception {
 

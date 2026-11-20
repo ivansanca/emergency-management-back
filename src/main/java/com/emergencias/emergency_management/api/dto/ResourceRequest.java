@@ -6,7 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * Request body to register an emergency resource.
+ * Request body to register an emergency resource. A resource is available
+ * unless {@code available} is explicitly false.
  */
 @Getter
 @NoArgsConstructor
@@ -22,7 +23,7 @@ public class ResourceRequest {
     @NotBlank
     private String type;
 
-    private boolean available;
+    private Boolean available;
 
     @NotBlank
     private String zoneCode;

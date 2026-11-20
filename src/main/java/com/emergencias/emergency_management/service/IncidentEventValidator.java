@@ -22,12 +22,20 @@ public final class IncidentEventValidator {
 
         if (event == null
                 || isBlank(event.getId())
-                || isBlank(event.getType())
-                || event.getSeverity() < 0
-                || event.getSeverity() > 4) {
+                || isBlank(event.getType())) {
 
             throw new InvalidIncidentEventException(
                     "Los datos del incidente no son válidos");
+        }
+
+        if (event.getSeverity() == null) {
+            throw new InvalidIncidentEventException(
+                    "Hay que indicar la gravedad del incidente");
+        }
+
+        if (event.getSeverity() < 0 || event.getSeverity() > 4) {
+            throw new InvalidIncidentEventException(
+                    "La gravedad debe estar entre 0 y 4");
         }
 
         if (event.getSchemaVersion() != null

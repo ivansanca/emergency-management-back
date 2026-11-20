@@ -5,6 +5,7 @@ import com.emergencias.emergency_management.exception.InvalidIncidentEventExcept
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.messaging.producer.IncidentProducer;
 import com.emergencias.emergency_management.model.IncidentSource;
+import com.emergencias.emergency_management.service.IncidentGraphService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -26,6 +28,9 @@ class IncidentControllerTest {
 
     @Mock
     private IncidentProducer incidentProducer;
+
+    @Mock
+    private IncidentGraphService incidentGraphService;
 
     @InjectMocks
     private IncidentController incidentController;
@@ -77,6 +82,23 @@ class IncidentControllerTest {
                 .type("FOREST_FIRE")
                 .severity(3)
                 .build();
+
+        assertThrows(
+                InvalidIncidentEventException.class,
+                () -> incidentController.create(event));
+
+        verifyNoInteractions(incidentProducer);
+    }
+
+    @Test
+    void createRejectsEventWithoutApplicableRule() {
+        IncidentEvent event = IncidentEvent.builder()
+                .type("FOREST_FIRE")
+                .severity(4)
+                .zoneCode("39014")
+                .build();
+        doThrow(new InvalidIncidentEventException("Sin regla"))
+                .when(incidentGraphService).requireApplicableRule(event);
 
         assertThrows(
                 InvalidIncidentEventException.class,

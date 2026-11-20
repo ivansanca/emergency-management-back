@@ -40,4 +40,20 @@ public interface DecisionRuleRepository
         """)
     List<ApplicableRuleRow> findApplicableRules(
             @Param("incidentId") String incidentId);
+
+    /**
+     * Whether an active rule covers incidents of this type and severity.
+     */
+    @Query("""
+        MATCH (rule:DecisionRule)
+        WHERE rule.incidentType = $type
+          AND rule.active = true
+          AND $severity >= rule.minSeverity
+          AND $severity <= rule.maxSeverity
+
+        RETURN count(rule) > 0
+        """)
+    boolean existsActiveRule(
+            @Param("type") String type,
+            @Param("severity") int severity);
 }

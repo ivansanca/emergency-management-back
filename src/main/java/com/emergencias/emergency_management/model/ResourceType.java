@@ -18,4 +18,6 @@ public class ResourceType {
 
     @Id
     private String name;
+
+    private Boolean aerial;
 }

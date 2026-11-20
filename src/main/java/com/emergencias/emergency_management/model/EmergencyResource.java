@@ -39,15 +39,15 @@ public class EmergencyResource {
     public EmergencyResource(
             String id,
             String name,
-            String type,
+            ResourceType resourceType,
             boolean available,
             Zone zone) {
 
         this.id = id;
         this.name = name;
-        this.type = type;
+        this.type = resourceType.getName();
         this.available = available;
         this.zone = zone;
-        this.resourceType = new ResourceType(type);
+        this.resourceType = resourceType;
     }
 }

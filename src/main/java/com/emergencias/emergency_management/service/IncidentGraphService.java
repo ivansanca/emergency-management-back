@@ -6,6 +6,7 @@ import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentSource;
 import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.model.Zone;
+import com.emergencias.emergency_management.repository.DecisionRuleRepository;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class IncidentGraphService {
 
     private final IncidentRepository incidentRepository;
     private final ZoneRepository zoneRepository;
+    private final DecisionRuleRepository decisionRuleRepository;
 
     /**
      * Registers the incident described by the event.
@@ -41,6 +43,8 @@ public class IncidentGraphService {
             return new IncidentSaveResult(existing.get(), false);
         }
 
+        requireApplicableRule(event);
+
         Zone zone = resolveZone(event);
 
         Incident incident = toIncident(event, zone, Instant.now());
@@ -48,6 +52,23 @@ public class IncidentGraphService {
         incidentRepository.save(incident);
 
         return new IncidentSaveResult(incident, true);
+    }
+
+    /**
+     * Rejects incidents that no active rule covers, such as an unknown type
+     * or a severity outside the scale of its type. Accepting them would
+     * register incidents that silently never get a recommendation. Valid
+     * types and severities come from the rules in the graph, so new kinds of
+     * emergency only need new rules.
+     */
+    public void requireApplicableRule(IncidentEvent event) {
+        if (!decisionRuleRepository.existsActiveRule(
+                event.getType(), event.getSeverity())) {
+
+            throw new InvalidIncidentEventException(
+                    "No hay ninguna regla activa para " + event.getType()
+                            + " con gravedad " + event.getSeverity());
+        }
     }
 
     public void markNotified(String incidentId) {

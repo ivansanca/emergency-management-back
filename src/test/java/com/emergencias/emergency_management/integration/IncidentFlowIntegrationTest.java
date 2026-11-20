@@ -65,10 +65,14 @@ class IncidentFlowIntegrationTest {
     }
 
     private void publish(String id, String zoneCode) {
+        publish(id, zoneCode, 2);
+    }
+
+    private void publish(String id, String zoneCode, int severity) {
         incidentProducer.publish(IncidentEvent.builder()
                 .id(id)
                 .type("FOREST_FIRE")
-                .severity(2)
+                .severity(severity)
                 .zoneCode(zoneCode)
                 .description("Integration test")
                 .build());
@@ -115,6 +119,18 @@ class IncidentFlowIntegrationTest {
         assertEquals(1,
                 reader.recordsFor(KafkaTopics.INCIDENT_CREATED, id).size());
         assertEquals(1, graph.count(
+                "MATCH (i:Incident {id: $id}) RETURN count(i)",
+                Map.of("id", id)));
+    }
+
+    @Test
+    void eventWithoutApplicableRuleEndsUpInTheDeadLetterTopic() {
+        String id = newId();
+
+        publish(id, TestGraph.ORIGIN_ZONE, 4);
+
+        reader.awaitFirst(KafkaTopics.EMERGENCY_EVENTS_DLT, id);
+        assertEquals(0, graph.count(
                 "MATCH (i:Incident {id: $id}) RETURN count(i)",
                 Map.of("id", id)));
     }

@@ -6,8 +6,11 @@ import com.emergencias.emergency_management.exception.InvalidIncidentEventExcept
 import com.emergencias.emergency_management.exception.InvalidRequestException;
 import com.emergencias.emergency_management.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
+import org.neo4j.driver.exceptions.ServiceUnavailableException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.transaction.TransactionSystemException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -57,5 +60,27 @@ class ApiExceptionHandlerTest {
         assertEquals(
                 HttpStatus.SERVICE_UNAVAILABLE.value(), problem.getStatus());
         assertFalse(problem.getDetail().contains("broker down"));
+    }
+
+    @Test
+    void databaseDownIsReportedAs503WithoutInternalDetails() {
+        ProblemDetail problem = handler.handleDataAccess(
+                new TransactionSystemException(
+                        "Could not open a new Neo4j session",
+                        new ServiceUnavailableException("localhost:7687")));
+
+        assertEquals(
+                HttpStatus.SERVICE_UNAVAILABLE.value(), problem.getStatus());
+        assertFalse(problem.getDetail().contains("7687"));
+    }
+
+    @Test
+    void otherDataErrorsAreReportedAs500() {
+        ProblemDetail problem = handler.handleDataAccess(
+                new InvalidDataAccessApiUsageException("bad query"));
+
+        assertEquals(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), problem.getStatus());
+        assertFalse(problem.getDetail().contains("bad query"));
     }
 }

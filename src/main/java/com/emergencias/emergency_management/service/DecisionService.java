@@ -125,7 +125,9 @@ public class DecisionService {
 
         String ruleDescription =
                 selectedRule.ruleName()
-                        + ": " + selectedRule.description()
+                        + (selectedRule.description() != null
+                                ? ": " + selectedRule.description()
+                                : ".")
                         + " Necesidades: "
                         + requirements.stream()
                         .map(requirement -> requirement.quantity()
