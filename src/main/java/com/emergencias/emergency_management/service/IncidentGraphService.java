@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentSource;
@@ -11,9 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Registers incidents in the graph.
+ */
 @Service
 @RequiredArgsConstructor
 public class IncidentGraphService {
@@ -21,23 +24,34 @@ public class IncidentGraphService {
     private final IncidentRepository incidentRepository;
     private final ZoneRepository zoneRepository;
 
+    /**
+     * Registers the incident described by the event.
+     * <p>
+     * An event whose id is already registered is ignored and the existing
+     * incident is returned untouched. Kafka may deliver an event more than
+     * once and clients may resend it, so registering has to be idempotent.
+     */
     public IncidentSaveResult save(IncidentEvent event) {
         IncidentEventValidator.validate(event);
+
+        Optional<Incident> existing =
+                incidentRepository.findById(event.getId());
+
+        if (existing.isPresent()) {
+            return new IncidentSaveResult(existing.get(), false);
+        }
 
         Zone zone = resolveZone(event);
 
         Incident incident = toIncident(event, zone, Instant.now());
 
-        Optional<Incident> existing =
-                incidentRepository.findById(event.getId());
-
-        existing.map(Incident::getStatus)
-                .filter(Objects::nonNull)
-                .ifPresent(incident::setStatus);
-
         incidentRepository.save(incident);
 
-        return new IncidentSaveResult(incident, existing.isEmpty());
+        return new IncidentSaveResult(incident, true);
+    }
+
+    public void markNotified(String incidentId) {
+        incidentRepository.markNotified(incidentId);
     }
 
     private Incident toIncident(
@@ -62,6 +76,7 @@ public class IncidentGraphService {
         incident.setSource(event.getSource() != null
                 ? event.getSource()
                 : IncidentSource.MANUAL);
+        incident.setNotified(false);
 
         return incident;
     }
@@ -70,13 +85,13 @@ public class IncidentGraphService {
 
         if (event.hasZoneCode()) {
             return zoneRepository.findById(event.getZoneCode())
-                    .orElseThrow(() -> new IllegalArgumentException(
+                    .orElseThrow(() -> new InvalidIncidentEventException(
                             "No existe la zona " + event.getZoneCode()));
         }
 
         return zoneRepository
                 .findNearest(event.getLatitude(), event.getLongitude())
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new InvalidIncidentEventException(
                         "No hay ninguna zona con coordenadas"));
     }
 }

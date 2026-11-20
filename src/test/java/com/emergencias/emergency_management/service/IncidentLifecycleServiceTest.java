@@ -2,6 +2,7 @@ package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.dto.AssignmentResponse;
 import com.emergencias.emergency_management.dto.CloseIncidentResponse;
+import com.emergencias.emergency_management.exception.ConflictException;
 import com.emergencias.emergency_management.messaging.producer.IncidentNotificationProducer;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Incident;
@@ -14,8 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -83,12 +82,11 @@ class IncidentLifecycleServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(incident(IncidentStatus.CLOSED)));
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                ConflictException.class,
                 () -> incidentLifecycleService.assign(
                         "incident-1", "resource-1"));
 
-        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
         verify(resourceRepository, never())
                 .assignToIncident(anyString(), anyString());
     }
@@ -100,12 +98,11 @@ class IncidentLifecycleServiceTest {
         when(resourceRepository.findById("resource-1"))
                 .thenReturn(Optional.of(resource("FOREST_ENGINE", false)));
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                ConflictException.class,
                 () -> incidentLifecycleService.assign(
                         "incident-1", "resource-1"));
 
-        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
         verify(resourceRepository, never())
                 .assignToIncident(anyString(), anyString());
     }
@@ -119,12 +116,11 @@ class IncidentLifecycleServiceTest {
         when(decisionService.eligibleResourceTypes("incident-1"))
                 .thenReturn(List.of("FOREST_ENGINE"));
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                ConflictException.class,
                 () -> incidentLifecycleService.assign(
                         "incident-1", "resource-1"));
 
-        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
         verify(resourceRepository, never())
                 .assignToIncident(anyString(), anyString());
     }
@@ -149,11 +145,10 @@ class IncidentLifecycleServiceTest {
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(incident(IncidentStatus.CLOSED)));
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                ConflictException.class,
                 () -> incidentLifecycleService.close("incident-1"));
 
-        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
         verify(incidentRepository, never())
                 .closeAndReleaseResources(anyString());
         verify(incidentNotificationProducer, never()).incidentClosed(any());

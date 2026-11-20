@@ -7,9 +7,17 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
+/**
+ * Queries over zones.
+ */
 public interface ZoneRepository
         extends Neo4jRepository<Zone, String> {
 
+    /**
+     * Zone whose capital is closest to the given point. It is an
+     * approximation: the point may actually belong to a neighbouring
+     * municipality.
+     */
     @Query("""
         MATCH (z:Zone)
         WHERE z.latitude IS NOT NULL

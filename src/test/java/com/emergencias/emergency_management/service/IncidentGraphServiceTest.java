@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentSource;
@@ -58,15 +59,16 @@ class IncidentGraphServiceTest {
                 .thenReturn(Optional.of(CABUERNIGA));
         Instant occurredAt = Instant.parse("2026-08-14T15:30:00Z");
 
-        IncidentSaveResult result = incidentGraphService.save(IncidentEvent.builder()
-                .id("incident-1")
-                .type("FOREST_FIRE")
-                .severity(3)
-                .zoneCode("39014")
-                .occurredAt(occurredAt)
-                .source(IncidentSource.FIRMS)
-                .description("Forest fire")
-                .build());
+        IncidentSaveResult result =
+                incidentGraphService.save(IncidentEvent.builder()
+                        .id("incident-1")
+                        .type("FOREST_FIRE")
+                        .severity(3)
+                        .zoneCode("39014")
+                        .occurredAt(occurredAt)
+                        .source(IncidentSource.FIRMS)
+                        .description("Forest fire")
+                        .build());
 
         Incident incident = savedIncident();
         assertEquals("incident-1", incident.getId());
@@ -78,6 +80,7 @@ class IncidentGraphServiceTest {
         assertEquals(occurredAt, incident.getOccurredAt());
         assertEquals(IncidentSource.FIRMS, incident.getSource());
         assertNotNull(incident.getReceivedAt());
+        assertEquals(Boolean.FALSE, incident.getNotified());
         assertTrue(result.created());
         assertSame(incident, result.incident());
     }
@@ -140,26 +143,26 @@ class IncidentGraphServiceTest {
     }
 
     @Test
-    void saveKeepsStatusOfExistingIncident() {
-        when(zoneRepository.findById("39014"))
-                .thenReturn(Optional.of(CABUERNIGA));
+    void saveIgnoresEventOfExistingIncident() {
         Incident existing = new Incident(
                 "incident-1", "FOREST_FIRE", 2, "Forest fire",
                 IncidentStatus.CLOSED, CABUERNIGA);
         when(incidentRepository.findById("incident-1"))
                 .thenReturn(Optional.of(existing));
 
-        IncidentSaveResult result = incidentGraphService.save(IncidentEvent.builder()
-                .id("incident-1")
-                .type("FOREST_FIRE")
-                .severity(3)
-                .zoneCode("39014")
-                .build());
+        IncidentSaveResult result =
+                incidentGraphService.save(IncidentEvent.builder()
+                        .id("incident-1")
+                        .type("FOREST_FIRE")
+                        .severity(3)
+                        .zoneCode("39014")
+                        .build());
 
-        Incident incident = savedIncident();
         assertFalse(result.created());
-        assertEquals(IncidentStatus.CLOSED, incident.getStatus());
-        assertEquals(3, incident.getSeverity());
+        assertSame(existing, result.incident());
+        assertEquals(2, existing.getSeverity());
+        verify(incidentRepository, never()).save(any());
+        verifyNoInteractions(zoneRepository);
     }
 
     @Test
@@ -168,7 +171,7 @@ class IncidentGraphServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                IllegalArgumentException.class,
+                InvalidIncidentEventException.class,
                 () -> incidentGraphService.save(IncidentEvent.builder()
                         .id("incident-1")
                         .type("FOREST_FIRE")
@@ -182,7 +185,7 @@ class IncidentGraphServiceTest {
     @Test
     void saveRejectsInvalidEventWithoutPersisting() {
         assertThrows(
-                IllegalArgumentException.class,
+                InvalidIncidentEventException.class,
                 () -> incidentGraphService.save(IncidentEvent.builder()
                         .id("incident-1")
                         .type("FOREST_FIRE")
@@ -190,5 +193,12 @@ class IncidentGraphServiceTest {
                         .build()));
 
         verifyNoInteractions(incidentRepository, zoneRepository);
+    }
+
+    @Test
+    void markNotifiedUpdatesTheIncident() {
+        incidentGraphService.markNotified("incident-1");
+
+        verify(incidentRepository).markNotified("incident-1");
     }
 }

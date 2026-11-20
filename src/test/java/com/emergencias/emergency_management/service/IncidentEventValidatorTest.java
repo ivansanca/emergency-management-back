@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +38,14 @@ class IncidentEventValidatorTest {
     }
 
     @Test
+    void acceptsEventWithCurrentSchemaVersion() {
+        assertDoesNotThrow(() -> IncidentEventValidator.validate(
+                validEvent().zoneCode("39014")
+                        .schemaVersion(IncidentEvent.CURRENT_SCHEMA_VERSION)
+                        .build()));
+    }
+
+    @Test
     void rejectsInvalidEvents() {
         List<IncidentEvent> invalidEvents = List.of(
                 validEvent().id(null).zoneCode("39014").build(),
@@ -45,6 +54,7 @@ class IncidentEventValidatorTest {
                 validEvent().type(" ").zoneCode("39014").build(),
                 validEvent().severity(-1).zoneCode("39014").build(),
                 validEvent().severity(5).zoneCode("39014").build(),
+                validEvent().zoneCode("39014").schemaVersion(2).build(),
                 validEvent().build(),
                 validEvent().zoneCode(" ").build(),
                 validEvent().latitude(43.2265).build(),
@@ -54,11 +64,11 @@ class IncidentEventValidatorTest {
                         .latitude(43.2265).longitude(-2.9350).build());
 
         assertThrows(
-                IllegalArgumentException.class,
+                InvalidIncidentEventException.class,
                 () -> IncidentEventValidator.validate(null));
         for (IncidentEvent event : invalidEvents) {
             assertThrows(
-                    IllegalArgumentException.class,
+                    InvalidIncidentEventException.class,
                     () -> IncidentEventValidator.validate(event));
         }
     }

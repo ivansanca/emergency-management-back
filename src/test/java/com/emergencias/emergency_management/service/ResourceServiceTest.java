@@ -1,6 +1,8 @@
 package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.api.dto.ResourceRequest;
+import com.emergencias.emergency_management.exception.ConflictException;
+import com.emergencias.emergency_management.exception.InvalidRequestException;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Zone;
 import com.emergencias.emergency_management.repository.ResourceRepository;
@@ -11,8 +13,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -68,6 +68,20 @@ class ResourceServiceTest {
     }
 
     @Test
+    void createRejectsExistingResource() {
+        when(resourceRepository.existsById("BRP-41")).thenReturn(true);
+        ResourceRequest request = new ResourceRequest(
+                "BRP-41", "Autobomba de primera salida", "RURAL_ENGINE",
+                true, "39022");
+
+        assertThrows(
+                ConflictException.class,
+                () -> resourceService.create(request));
+
+        verify(resourceRepository, never()).save(any());
+    }
+
+    @Test
     void createRejectsUnknownZone() {
         when(zoneRepository.findById("99999"))
                 .thenReturn(Optional.empty());
@@ -75,11 +89,10 @@ class ResourceServiceTest {
                 "BRP-41", "Autobomba de primera salida", "RURAL_ENGINE",
                 true, "99999");
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                InvalidRequestException.class,
                 () -> resourceService.create(request));
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         verify(resourceRepository, never()).save(any());
     }
 }

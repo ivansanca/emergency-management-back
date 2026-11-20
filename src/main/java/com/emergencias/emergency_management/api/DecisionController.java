@@ -5,6 +5,10 @@ import com.emergencias.emergency_management.service.DecisionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST endpoint to query the resource recommendation of an incident. It is a
+ * read-only query: it never publishes notifications.
+ */
 @RestController
 @RequestMapping("/api/incidents")
 @RequiredArgsConstructor

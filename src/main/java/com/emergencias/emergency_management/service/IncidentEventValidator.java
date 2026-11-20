@@ -1,9 +1,15 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Validation shared by the REST adapter and the Kafka consumer. Other
+ * producers can write to the topic, so the consumer cannot rely on the checks
+ * made by the REST API.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class IncidentEventValidator {
 
@@ -20,27 +26,39 @@ public final class IncidentEventValidator {
                 || event.getSeverity() < 0
                 || event.getSeverity() > 4) {
 
-            throw new IllegalArgumentException(
+            throw new InvalidIncidentEventException(
                     "Los datos del incidente no son válidos");
         }
 
+        if (event.getSchemaVersion() != null
+                && event.getSchemaVersion() != IncidentEvent.CURRENT_SCHEMA_VERSION) {
+
+            throw new InvalidIncidentEventException(
+                    "Versión de esquema no soportada: "
+                            + event.getSchemaVersion());
+        }
+
         if ((event.getLatitude() == null) != (event.getLongitude() == null)) {
-            throw new IllegalArgumentException(
+            throw new InvalidIncidentEventException(
                     "Hay que indicar latitud y longitud a la vez");
         }
 
         if (!event.hasZoneCode() && !event.hasCoordinates()) {
-            throw new IllegalArgumentException(
+            throw new InvalidIncidentEventException(
                     "Hay que indicar el código de zona o las coordenadas");
         }
 
         if (event.hasCoordinates() && !insideCantabria(
                 event.getLatitude(), event.getLongitude())) {
-            throw new IllegalArgumentException(
+            throw new InvalidIncidentEventException(
                     "Las coordenadas están fuera de Cantabria");
         }
     }
 
+    /**
+     * Bounding box around Cantabria with some margin. It is a coarse filter:
+     * it also contains border areas of the neighbouring provinces.
+     */
     private static boolean insideCantabria(double latitude, double longitude) {
         return latitude >= MIN_LATITUDE && latitude <= MAX_LATITUDE
                 && longitude >= MIN_LONGITUDE && longitude <= MAX_LONGITUDE;

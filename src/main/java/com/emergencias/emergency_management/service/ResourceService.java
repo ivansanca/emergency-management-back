@@ -1,15 +1,18 @@
 package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.api.dto.ResourceRequest;
+import com.emergencias.emergency_management.exception.ConflictException;
+import com.emergencias.emergency_management.exception.InvalidRequestException;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Zone;
 import com.emergencias.emergency_management.repository.ResourceRepository;
 import com.emergencias.emergency_management.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Registration of emergency resources.
+ */
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
@@ -19,9 +22,13 @@ public class ResourceService {
 
     public EmergencyResource create(ResourceRequest request) {
 
+        if (resourceRepository.existsById(request.getId())) {
+            throw new ConflictException(
+                    "Ya existe el recurso " + request.getId());
+        }
+
         Zone zone = zoneRepository.findById(request.getZoneCode())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
+                .orElseThrow(() -> new InvalidRequestException(
                         "No existe la zona " + request.getZoneCode()));
 
         EmergencyResource resource = new EmergencyResource(

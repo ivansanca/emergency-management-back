@@ -10,11 +10,18 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Logs every event that ends up in the dead letter topic together with the
+ * reason of the rejection. It has its own consumer group so that it does not
+ * take part in the rebalances of the main consumer.
+ */
 @Component
 @Slf4j
 public class DeadLetterConsumer {
 
-    @KafkaListener(topics = KafkaTopics.EMERGENCY_EVENTS_DLT)
+    @KafkaListener(
+            topics = KafkaTopics.EMERGENCY_EVENTS_DLT,
+            groupId = "emergency-management-dlt")
     public void consume(ConsumerRecord<String, String> record) {
         log.warn("Evento rechazado desde {}. Motivo: {} ({}). Mensaje: {}",
                 header(record, KafkaHeaders.DLT_ORIGINAL_TOPIC),

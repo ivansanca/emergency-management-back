@@ -5,6 +5,11 @@ import lombok.Getter;
 
 import java.util.List;
 
+/**
+ * Recommendation for an incident: the rule applied, the recommended resources
+ * and the requirements that could not be covered. It is also the payload of
+ * the {@code incident-recommendation} notification.
+ */
 @Getter
 @Builder
 public class DecisionResponse {

@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.messaging.config;
 
+import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -38,8 +39,8 @@ class KafkaErrorHandlingConfigTest {
         List<Exception> recovered = new ArrayList<>();
         DefaultErrorHandler errorHandler = KafkaErrorHandlingConfig
                 .errorHandler((record, exception) -> recovered.add(exception));
-        IllegalArgumentException exception =
-                new IllegalArgumentException("No existe la zona 99999");
+        InvalidIncidentEventException exception =
+                new InvalidIncidentEventException("No existe la zona 99999");
 
         boolean handled = errorHandler.handleOne(
                 exception, RECORD,

@@ -58,6 +58,7 @@ class IncidentNotificationProducerTest {
 
         JsonNode message = sentMessage(KafkaTopics.INCIDENT_CREATED);
         assertEquals("INCIDENT_CREATED", message.get("eventType").asString());
+        assertEquals(1, message.get("schemaVersion").asInt());
         assertEquals("incident-1", message.get("incidentId").asString());
         assertFalse(message.get("eventId").asString().isBlank());
         assertFalse(message.get("emittedAt").isNull());

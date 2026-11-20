@@ -3,6 +3,9 @@ package com.emergencias.emergency_management;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Entry point of the emergency management core service.
+ */
 @SpringBootApplication
 public class EmergencyManagementApplication {
 

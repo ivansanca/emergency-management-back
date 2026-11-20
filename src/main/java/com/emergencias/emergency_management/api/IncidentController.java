@@ -7,16 +7,21 @@ import com.emergencias.emergency_management.model.IncidentSource;
 import com.emergencias.emergency_management.service.IncidentEventValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
+/**
+ * REST entry point for incidents reported by an operator.
+ * <p>
+ * It does not process the incident. It validates the event, publishes it to
+ * Kafka and answers 202 once the broker has confirmed it, exactly as any other
+ * event source would do. Events received here are always marked as manual.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/incidents")
@@ -32,16 +37,13 @@ public class IncidentController {
             event.setId(UUID.randomUUID().toString());
         }
 
-        if (event.getSource() == null) {
-            event.setSource(IncidentSource.MANUAL);
+        event.setSource(IncidentSource.MANUAL);
+
+        if (event.getSchemaVersion() == null) {
+            event.setSchemaVersion(IncidentEvent.CURRENT_SCHEMA_VERSION);
         }
 
-        try {
-            IncidentEventValidator.validate(event);
-        } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, exception.getMessage());
-        }
+        IncidentEventValidator.validate(event);
 
         incidentProducer.publish(event);
 
