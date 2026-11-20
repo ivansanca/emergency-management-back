@@ -6,6 +6,7 @@ import com.emergencias.emergency_management.model.Incident;
 import com.emergencias.emergency_management.model.IncidentSource;
 import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.model.Zone;
+import com.emergencias.emergency_management.repository.DecisionRuleRepository;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ZoneRepository;
 import org.junit.jupiter.api.Test;
@@ -43,8 +44,16 @@ class IncidentGraphServiceTest {
     @Mock
     private ZoneRepository zoneRepository;
 
+    @Mock
+    private DecisionRuleRepository decisionRuleRepository;
+
     @InjectMocks
     private IncidentGraphService incidentGraphService;
+
+    private void givenRuleFor(String type, int severity) {
+        when(decisionRuleRepository.existsActiveRule(type, severity))
+                .thenReturn(true);
+    }
 
     private Incident savedIncident() {
         ArgumentCaptor<Incident> incidentCaptor =
@@ -55,6 +64,7 @@ class IncidentGraphServiceTest {
 
     @Test
     void saveMapsEventToIncidentAndPersistsIt() {
+        givenRuleFor("FOREST_FIRE", 3);
         when(zoneRepository.findById("39014"))
                 .thenReturn(Optional.of(CABUERNIGA));
         Instant occurredAt = Instant.parse("2026-08-14T15:30:00Z");
@@ -87,6 +97,7 @@ class IncidentGraphServiceTest {
 
     @Test
     void saveResolvesNearestZoneFromCoordinates() {
+        givenRuleFor("FOREST_FIRE", 2);
         when(zoneRepository.findNearest(43.2265, -4.3016))
                 .thenReturn(Optional.of(CABUERNIGA));
 
@@ -106,6 +117,7 @@ class IncidentGraphServiceTest {
 
     @Test
     void saveUsesZoneCodeBeforeCoordinates() {
+        givenRuleFor("FOREST_FIRE", 2);
         when(zoneRepository.findById("39014"))
                 .thenReturn(Optional.of(CABUERNIGA));
 
@@ -126,6 +138,7 @@ class IncidentGraphServiceTest {
 
     @Test
     void saveAppliesDefaultsWhenOptionalFieldsAreMissing() {
+        givenRuleFor("FOREST_FIRE", 1);
         when(zoneRepository.findById("39014"))
                 .thenReturn(Optional.of(CABUERNIGA));
 
@@ -167,6 +180,7 @@ class IncidentGraphServiceTest {
 
     @Test
     void saveRejectsUnknownZoneWithoutPersisting() {
+        givenRuleFor("FOREST_FIRE", 3);
         when(zoneRepository.findById("99999"))
                 .thenReturn(Optional.empty());
 
@@ -193,6 +207,21 @@ class IncidentGraphServiceTest {
                         .build()));
 
         verifyNoInteractions(incidentRepository, zoneRepository);
+    }
+
+    @Test
+    void saveRejectsEventWithoutApplicableRuleWithoutPersisting() {
+        assertThrows(
+                InvalidIncidentEventException.class,
+                () -> incidentGraphService.save(IncidentEvent.builder()
+                        .id("incident-1")
+                        .type("FOREST_FIRE")
+                        .severity(4)
+                        .zoneCode("39014")
+                        .build()));
+
+        verify(incidentRepository, never()).save(any());
+        verifyNoInteractions(zoneRepository);
     }
 
     @Test

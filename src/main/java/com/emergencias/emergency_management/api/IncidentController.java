@@ -5,6 +5,7 @@ import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.messaging.producer.IncidentProducer;
 import com.emergencias.emergency_management.model.IncidentSource;
 import com.emergencias.emergency_management.service.IncidentEventValidator;
+import com.emergencias.emergency_management.service.IncidentGraphService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class IncidentController {
 
     private final IncidentProducer incidentProducer;
+    private final IncidentGraphService incidentGraphService;
 
     @PostMapping
     public ResponseEntity<IncidentAcceptedResponse> create(
@@ -44,6 +46,7 @@ public class IncidentController {
         }
 
         IncidentEventValidator.validate(event);
+        incidentGraphService.requireApplicableRule(event);
 
         incidentProducer.publish(event);
 

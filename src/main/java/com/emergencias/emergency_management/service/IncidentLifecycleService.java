@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -65,7 +66,7 @@ public class IncidentLifecycleService {
                             + eligibleTypes);
         }
 
-        String assignedAt = resourceRepository
+        Instant assignedAt = resourceRepository
                 .assignToIncident(resourceId, incidentId)
                 .orElseThrow(() -> new ConflictException(
                         "El recurso " + resourceId
@@ -97,10 +98,10 @@ public class IncidentLifecycleService {
                     "El incidente " + incidentId + " ya está cerrado");
         }
 
-        Long released =
-                incidentRepository.closeAndReleaseResources(incidentId);
-
-        long releasedResources = released == null ? 0 : released;
+        long releasedResources = incidentRepository
+                .closeAndReleaseResources(incidentId)
+                .orElseThrow(() -> new ConflictException(
+                        "El incidente " + incidentId + " ya está cerrado"));
 
         log.info("Incidente {} cerrado, {} recursos liberados",
                 incidentId, releasedResources);

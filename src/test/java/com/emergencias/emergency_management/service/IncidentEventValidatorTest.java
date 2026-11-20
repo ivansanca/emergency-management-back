@@ -52,6 +52,7 @@ class IncidentEventValidatorTest {
                 validEvent().id(" ").zoneCode("39014").build(),
                 validEvent().type(null).zoneCode("39014").build(),
                 validEvent().type(" ").zoneCode("39014").build(),
+                validEvent().severity(null).zoneCode("39014").build(),
                 validEvent().severity(-1).zoneCode("39014").build(),
                 validEvent().severity(5).zoneCode("39014").build(),
                 validEvent().zoneCode("39014").schemaVersion(2).build(),

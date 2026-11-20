@@ -213,4 +213,25 @@ class DecisionServiceTest {
         verify(resourceRepository).findAvailableAerialResources(
                 List.of("AERIAL_UNIT"));
     }
+
+    @Test
+    void ruleWithoutDescriptionIsShownWithoutNull() {
+        givenIncident();
+        givenLimits();
+        when(decisionRuleRepository.findApplicableRules("incident-1"))
+                .thenReturn(List.of(new ApplicableRuleRow(
+                        "rule-1", "Rule rule-1", null,
+                        100, "AERIAL_UNIT", "AERIAL_UNIT", 1)));
+        when(resourceRepository.findAvailableForIncident(
+                "incident-1", List.of("AERIAL_UNIT"), 60.0, 60.0))
+                .thenReturn(List.of());
+        when(resourceRepository.findAvailableAerialResources(
+                List.of("AERIAL_UNIT")))
+                .thenReturn(List.of());
+
+        DecisionResponse response = decisionService.recommend("incident-1");
+
+        assertEquals("Rule rule-1. Necesidades: 1 x AERIAL_UNIT",
+                response.getRuleApplied());
+    }
 }

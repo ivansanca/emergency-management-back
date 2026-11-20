@@ -6,6 +6,7 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -161,9 +162,9 @@ public interface ResourceRepository
           AND coalesce(i.status, 'ACTIVE') <> 'CLOSED'
         SET r.available = false
         CREATE (r)-[a:ASSIGNED_TO {assignedAt: datetime()}]->(i)
-        RETURN toString(a.assignedAt)
+        RETURN a.assignedAt
         """)
-    Optional<String> assignToIncident(
+    Optional<Instant> assignToIncident(
             @Param("resourceId") String resourceId,
             @Param("incidentId") String incidentId);
 }
