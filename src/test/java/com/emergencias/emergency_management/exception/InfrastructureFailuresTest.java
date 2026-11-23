@@ -2,6 +2,7 @@ package com.emergencias.emergency_management.exception;
 
 import org.junit.jupiter.api.Test;
 import org.neo4j.driver.exceptions.ServiceUnavailableException;
+import org.apache.kafka.common.errors.RecordTooLargeException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.transaction.TransactionSystemException;
 
@@ -28,6 +29,13 @@ class InfrastructureFailuresTest {
         assertTrue(InfrastructureFailures.isInfrastructureFailure(
                 new EventPublishingException("incident-created",
                         new IllegalStateException("broker down"))));
+    }
+
+    @Test
+    void eventRejectedByKafkaIsNotAnInfrastructureFailure() {
+        assertFalse(InfrastructureFailures.isInfrastructureFailure(
+                new EventRejectedException("incident-created",
+                        new RecordTooLargeException("too large"))));
     }
 
     @Test

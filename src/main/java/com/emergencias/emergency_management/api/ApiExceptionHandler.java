@@ -2,6 +2,7 @@ package com.emergencias.emergency_management.api;
 
 import com.emergencias.emergency_management.exception.ConflictException;
 import com.emergencias.emergency_management.exception.EventPublishingException;
+import com.emergencias.emergency_management.exception.EventRejectedException;
 import com.emergencias.emergency_management.exception.InfrastructureFailures;
 import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.exception.InvalidRequestException;
@@ -50,6 +51,19 @@ public class ApiExceptionHandler {
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.SERVICE_UNAVAILABLE,
                 "No se ha podido registrar el evento. Inténtalo de nuevo.");
+    }
+
+    /**
+     * Kafka rejected the event itself (too large, for instance): sending it
+     * again would fail too, so it is the request that has to change.
+     */
+    @ExceptionHandler(EventRejectedException.class)
+    public ProblemDetail handleRejected(EventRejectedException exception) {
+        log.warn("Kafka ha rechazado el evento", exception);
+
+        return ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "No se puede registrar el evento: es demasiado grande o no es válido.");
     }
 
     /**
