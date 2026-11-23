@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.config.GroupingProperties;
 import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.model.Incident;
@@ -9,13 +10,16 @@ import com.emergencias.emergency_management.model.Zone;
 import com.emergencias.emergency_management.repository.DecisionRuleRepository;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ZoneRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -27,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -47,8 +53,16 @@ class IncidentGraphServiceTest {
     @Mock
     private DecisionRuleRepository decisionRuleRepository;
 
+    @Spy
+    private GroupingProperties groupingProperties = new GroupingProperties();
+
     @InjectMocks
     private IncidentGraphService incidentGraphService;
+
+    @BeforeEach
+    void groupForestFiresWithinTwoKilometres() {
+        groupingProperties.getRadiusMeters().put("FOREST_FIRE", 2000.0);
+    }
 
     private void givenRuleFor(String type, int severity) {
         when(decisionRuleRepository.existsActiveRule(type, severity))
@@ -229,5 +243,106 @@ class IncidentGraphServiceTest {
         incidentGraphService.markNotified("incident-1");
 
         verify(incidentRepository).markNotified("incident-1");
+    }
+
+    /** findById answers for this incident only: other ids are new events. */
+    private void givenOnlyIncident(Incident incident) {
+        when(incidentRepository.findById(anyString())).thenAnswer(call ->
+                incident.getId().equals(call.getArgument(0))
+                        ? Optional.of(incident)
+                        : Optional.empty());
+    }
+
+    private static IncidentEvent hotspot(String id) {
+        return IncidentEvent.builder()
+                .id(id)
+                .type("FOREST_FIRE")
+                .severity(0)
+                .latitude(43.2265)
+                .longitude(-4.3016)
+                .occurredAt(Instant.parse("2026-03-21T02:00:00Z"))
+                .source(IncidentSource.FIRMS)
+                .build();
+    }
+
+    @Test
+    void newIncidentStoresItsFirstDetection() {
+        givenRuleFor("FOREST_FIRE", 0);
+        when(zoneRepository.findNearest(43.2265, -4.3016))
+                .thenReturn(Optional.of(CABUERNIGA));
+        when(incidentRepository.addDetection(eq("H-1"), eq("H-1"), eq(43.2265),
+                eq(-4.3016), any(), any(), eq("FIRMS"))).thenReturn(1L);
+
+        IncidentSaveResult result = incidentGraphService.save(hotspot("H-1"));
+
+        assertTrue(result.created());
+        assertEquals(Long.valueOf(1), result.incident().getDetectionCount());
+    }
+
+    @Test
+    void hotspotNearAnOpenIncidentIsAddedToIt() {
+        givenRuleFor("FOREST_FIRE", 0);
+        Incident open = new Incident("H-1", "FOREST_FIRE", 0, null,
+                IncidentStatus.ACTIVE, CABUERNIGA);
+        Instant observedAt = Instant.parse("2026-03-21T02:00:00Z");
+        when(incidentRepository.findIncidentToJoin("FOREST_FIRE", 43.2265, -4.3016, 2000.0,
+                observedAt.minus(Duration.ofHours(24)), observedAt.plus(Duration.ofHours(24))))
+                .thenReturn(Optional.of("H-1"));
+        givenOnlyIncident(open);
+        when(incidentRepository.addDetection(eq("H-1"), eq("H-2"), any(), any(),
+                any(), any(), anyString())).thenReturn(2L);
+
+        IncidentSaveResult result = incidentGraphService.save(hotspot("H-2"));
+
+        assertTrue(result.grouped());
+        assertFalse(result.created());
+        assertSame(open, result.incident());
+        assertEquals(Long.valueOf(2), open.getDetectionCount());
+        verify(incidentRepository, never()).save(any());
+        verifyNoInteractions(zoneRepository);
+    }
+
+    @Test
+    void detectionAlreadyAddedToAnIncidentIsIgnored() {
+        Incident holder = new Incident("H-1", "FOREST_FIRE", 0, null,
+                IncidentStatus.CLOSED, CABUERNIGA);
+        when(incidentRepository.findIncidentIdByDetectionId("H-2"))
+                .thenReturn(Optional.of("H-1"));
+        givenOnlyIncident(holder);
+
+        IncidentSaveResult result = incidentGraphService.save(hotspot("H-2"));
+
+        assertFalse(result.created());
+        assertFalse(result.grouped());
+        assertSame(holder, result.incident());
+        verify(incidentRepository, never()).addDetection(
+                any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void manualReportIsNeverGrouped() {
+        givenRuleFor("FOREST_FIRE", 0);
+        when(zoneRepository.findNearest(43.2265, -4.3016))
+                .thenReturn(Optional.of(CABUERNIGA));
+        IncidentEvent manual = hotspot("M-1");
+        manual.setSource(IncidentSource.MANUAL);
+
+        assertTrue(incidentGraphService.save(manual).created());
+
+        verify(incidentRepository, never()).findIncidentToJoin(
+                any(), anyDouble(), anyDouble(), anyDouble(), any(), any());
+    }
+
+    @Test
+    void typeWithoutRadiusIsNeverGrouped() {
+        groupingProperties.getRadiusMeters().clear();
+        givenRuleFor("FOREST_FIRE", 0);
+        when(zoneRepository.findNearest(43.2265, -4.3016))
+                .thenReturn(Optional.of(CABUERNIGA));
+
+        assertTrue(incidentGraphService.save(hotspot("H-1")).created());
+
+        verify(incidentRepository, never()).findIncidentToJoin(
+                any(), anyDouble(), anyDouble(), anyDouble(), any(), any());
     }
 }

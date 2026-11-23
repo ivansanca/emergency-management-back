@@ -40,11 +40,12 @@ ejecuta los scripts de [`neo4j`](neo4j) en orden, desde Neo4j Browser o con
 
 | Script                     | Contenido                                           |
 |----------------------------|-----------------------------------------------------|
-| `00-constraints.cypher`    | Restricciones de unicidad                           |
+| `00-constraints.cypher`    | Restricciones de unicidad e índice espacial         |
 | `01-decision-rules.cypher` | Reglas de decisión y tipos de recurso que requieren |
 | `02-zones.cypher`          | Los 102 municipios (código INE y coordenadas)       |
 | `03-roads.cypher`          | Carreteras entre municipios vecinos (km y minutos)  |
 | `04-resources.cypher`      | Vehículos de los parques de bomberos                |
+| `05-detections.cypher`     | Primera detección de los incidentes ya registrados  |
 
 ### 3. Arrancar la aplicación
 

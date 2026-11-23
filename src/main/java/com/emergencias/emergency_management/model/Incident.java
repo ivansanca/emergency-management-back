@@ -15,6 +15,11 @@ import java.time.Instant;
  * {@code occurredAt} is when the emergency happened according to its source
  * and {@code receivedAt} is when this service registered it. {@code notified}
  * tells whether Kafka has confirmed the {@code incident-created} notification.
+ * <p>
+ * Each event that reports the incident is stored as a {@code Detection} node
+ * linked to it, written with Cypher in {@code IncidentRepository}.
+ * {@code detectionCount} and {@code lastDetectedAt} summarise them, so that
+ * the incident does not load its detections.
  */
 @Node("Incident")
 @Getter
@@ -35,6 +40,8 @@ public class Incident {
     private Instant receivedAt;
     private IncidentSource source;
     private Boolean notified;
+    private Long detectionCount;
+    private Instant lastDetectedAt;
 
     @Relationship(
             type = "OCCURRED_IN",

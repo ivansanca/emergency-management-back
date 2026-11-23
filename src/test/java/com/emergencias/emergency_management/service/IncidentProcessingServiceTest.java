@@ -133,4 +133,18 @@ class IncidentProcessingServiceTest {
         verify(incidentNotificationProducer, never())
                 .incidentRecommendation(any());
     }
+
+    @Test
+    void detectionAddedToAnOpenIncidentIsNotNotifiedAgain() {
+        Incident incident = new Incident(
+                "incident-1", "FOREST_FIRE", 2, null,
+                IncidentStatus.ACTIVE, null);
+        when(incidentGraphService.save(EVENT))
+                .thenReturn(IncidentSaveResult.grouped(incident));
+
+        incidentProcessingService.process(EVENT);
+
+        verifyNoInteractions(incidentNotificationProducer, decisionService);
+        verify(incidentGraphService, never()).markNotified(anyString());
+    }
 }
