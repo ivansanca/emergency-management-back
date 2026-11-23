@@ -2,9 +2,11 @@ package com.emergencias.emergency_management.api;
 
 import com.emergencias.emergency_management.exception.ConflictException;
 import com.emergencias.emergency_management.exception.EventPublishingException;
+import com.emergencias.emergency_management.exception.EventRejectedException;
 import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.exception.InvalidRequestException;
 import com.emergencias.emergency_management.exception.NotFoundException;
+import org.apache.kafka.common.errors.RecordTooLargeException;
 import org.junit.jupiter.api.Test;
 import org.neo4j.driver.exceptions.ServiceUnavailableException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -60,6 +62,17 @@ class ApiExceptionHandlerTest {
         assertEquals(
                 HttpStatus.SERVICE_UNAVAILABLE.value(), problem.getStatus());
         assertFalse(problem.getDetail().contains("broker down"));
+    }
+
+    @Test
+    void eventRejectedByKafkaIsReportedAs400WithoutInternalDetails() {
+        ProblemDetail problem = handler.handleRejected(
+                new EventRejectedException(
+                        "emergency-events",
+                        new RecordTooLargeException("The message is 2000000 bytes")));
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), problem.getStatus());
+        assertFalse(problem.getDetail().contains("2000000"));
     }
 
     @Test

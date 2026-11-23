@@ -1,13 +1,18 @@
 package com.emergencias.emergency_management.messaging.producer;
 
 import com.emergencias.emergency_management.exception.EventPublishingException;
+import com.emergencias.emergency_management.exception.EventRejectedException;
 import com.emergencias.emergency_management.messaging.config.KafkaTopics;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
+import org.apache.kafka.common.errors.RecordTooLargeException;
+import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -71,6 +76,39 @@ class IncidentProducerTest {
     void publishFailsWhenKafkaCannotBeReached() {
         when(kafkaTemplate.send(anyString(), anyString(), anyString()))
                 .thenThrow(new IllegalStateException("no metadata"));
+
+        assertThrows(
+                EventPublishingException.class,
+                () -> producer.publish(EVENT));
+    }
+
+    @Test
+    void eventTooLargeForKafkaIsRejected() {
+        when(kafkaTemplate.send(anyString(), anyString(), anyString()))
+                .thenReturn(CompletableFuture.failedFuture(
+                        new RecordTooLargeException("too large")));
+
+        assertThrows(
+                EventRejectedException.class,
+                () -> producer.publish(EVENT));
+    }
+
+    @Test
+    void rejectionThrownBySendIsAlsoRejected() {
+        when(kafkaTemplate.send(anyString(), anyString(), anyString()))
+                .thenThrow(new KafkaException("Send failed",
+                        new SerializationException("bad record")));
+
+        assertThrows(
+                EventRejectedException.class,
+                () -> producer.publish(EVENT));
+    }
+
+    @Test
+    void notAuthorisedIsATemporaryFailure() {
+        when(kafkaTemplate.send(anyString(), anyString(), anyString()))
+                .thenReturn(CompletableFuture.failedFuture(
+                        new TopicAuthorizationException("emergency-events")));
 
         assertThrows(
                 EventPublishingException.class,

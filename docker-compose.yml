@@ -20,6 +20,9 @@ services:
       KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # Los topics los declaran los servicios (KafkaTopicsConfig). Sin esto, un topic
+      # borrado o mal escrito se crearia solo, con 1 particion y sin avisar.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
   redpanda-console:
     image: docker.redpanda.com/redpandadata/console:latest
