@@ -14,3 +14,10 @@ FOR (rt:ResourceType) REQUIRE rt.name IS UNIQUE;
 
 CREATE CONSTRAINT decision_rule_id_unique IF NOT EXISTS
 FOR (r:DecisionRule) REQUIRE r.id IS UNIQUE;
+
+CREATE CONSTRAINT detection_id_unique IF NOT EXISTS
+FOR (d:Detection) REQUIRE d.id IS UNIQUE;
+
+// Indice espacial para buscar detecciones cercanas al agrupar
+CREATE POINT INDEX detection_location IF NOT EXISTS
+FOR (d:Detection) ON (d.location);

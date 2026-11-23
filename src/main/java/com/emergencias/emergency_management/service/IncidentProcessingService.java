@@ -33,6 +33,13 @@ public class IncidentProcessingService {
         IncidentSaveResult result = incidentGraphService.save(event);
         Incident incident = result.incident();
 
+        if (result.grouped()) {
+            // Same fire seen again: it is already notified and recommended.
+            log.info("Detección {} añadida al incidente {} ({} detecciones)",
+                    event.getId(), incident.getId(), incident.getDetectionCount());
+            return;
+        }
+
         if (!result.created() && !pendingNotification(incident)) {
             log.info("Incidente {} ya registrado: se ignora el duplicado",
                     event.getId());
@@ -52,11 +59,13 @@ public class IncidentProcessingService {
         }
 
         try {
+            // The incident id, not the event id: a redelivered detection of
+            // an incident pending notification has an id of its own.
             incidentNotificationProducer.incidentRecommendation(
-                    decisionService.recommend(event.getId()));
+                    decisionService.recommend(incident.getId()));
         } catch (RuntimeException exception) {
             log.error("Incidente {} registrado, pero no se pudo calcular "
-                    + "su recomendación", event.getId(), exception);
+                    + "su recomendación", incident.getId(), exception);
         }
     }
 
