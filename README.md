@@ -61,12 +61,23 @@ arrancar. Para comprobar que está levantada: `GET /actuator/health`.
 | Método | Ruta                                         | Descripción                                             |
 |--------|----------------------------------------------|---------------------------------------------------------|
 | POST   | `/api/incidents`                             | Registra un incidente (lo publica en Kafka, responde 202) |
+| POST   | `/api/incidents?confirmNew=true`             | Lo registra aunque haya un incidente abierto cerca      |
+| POST   | `/api/incidents/{id}/detections`             | Añade un aviso al incidente (`{"latitude": …, "longitude": …}`) |
 | GET    | `/api/incidents/{id}/recommendations`        | Recursos recomendados para el incidente                 |
 | POST   | `/api/incidents/{id}/assignments`            | Asigna un recurso (`{"resourceId": "..."}`)             |
 | POST   | `/api/incidents/{id}/close`                  | Cierra el incidente y libera sus recursos               |
 | POST   | `/api/resources`                             | Da de alta un recurso                                   |
 
 Los errores se devuelven en formato Problem Details (RFC 9457).
+
+Un alta con coordenadas cerca de un incidente abierto del mismo tipo (a menos
+del radio de agrupación y dentro de la ventana de 24 h) no se registra: la API
+responde 409 con ese incidente en el campo `nearbyIncident` (id, tipo,
+gravedad, detecciones y distancia en metros) y el id del alta en `reportId`,
+para reutilizarlo en la siguiente petición. El operador decide si es otra
+emergencia, y repite el alta con `confirmNew=true`, o la misma, y añade su
+aviso al incidente con `POST /api/incidents/{id}/detections`, que no notifica
+nada ni cambia la gravedad. Ver [`http/alta-cercana.http`](http/alta-cercana.http).
 
 Ejemplo de incidente (la ubicación se indica con `zoneCode`, con coordenadas o
 con ambos):

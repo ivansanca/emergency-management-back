@@ -1,5 +1,7 @@
 package com.emergencias.emergency_management.api;
 
+import com.emergencias.emergency_management.dto.NearbyIncident;
+import com.emergencias.emergency_management.exception.NearbyIncidentException;
 import com.emergencias.emergency_management.exception.ConflictException;
 import com.emergencias.emergency_management.exception.EventPublishingException;
 import com.emergencias.emergency_management.exception.EventRejectedException;
@@ -14,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.transaction.TransactionSystemException;
 
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -37,6 +41,27 @@ class ApiExceptionHandlerTest {
 
         assertEquals(HttpStatus.CONFLICT.value(), problem.getStatus());
         assertEquals("El recurso X no está disponible", problem.getDetail());
+    }
+
+    @Test
+    void nearbyIncidentIsReportedAs409WithTheIncidentAsAField() {
+        NearbyIncident nearby = NearbyIncident.builder()
+                .incidentId("FIRMS-1")
+                .type("FOREST_FIRE")
+                .detectionCount(3)
+                .distanceMeters(800)
+                .build();
+
+        ProblemDetail problem = handler.handleNearbyIncident(
+                new NearbyIncidentException(nearby, "REPORT-1"));
+
+        assertEquals(HttpStatus.CONFLICT.value(), problem.getStatus());
+        assertEquals("Incidente cercano", problem.getTitle());
+        assertSame(nearby, problem.getProperties().get("nearbyIncident"));
+        assertEquals("REPORT-1", problem.getProperties().get("reportId"));
+        assertTrue(problem.getDetail().contains("(FIRMS-1, 3 detecciones)"));
+        assertTrue(problem.getDetail().contains("confirmNew=true"));
+        assertTrue(problem.getDetail().contains("/api/incidents/FIRMS-1/detections"));
     }
 
     @Test

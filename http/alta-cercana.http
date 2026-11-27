@@ -1,0 +1,25 @@
+### Alta cerca de un incidente abierto (sustituye INCIDENT_ID por el que devuelva el 409)
+
+### 1. Primera alta
+POST http://localhost:8080/api/incidents
+Content-Type: application/json
+
+{ "type": "FOREST_FIRE", "severity": 2, "latitude": 43.2265, "longitude": -4.3016 }
+
+### 2. Otra alta a unos 500 m -> 409 Conflict con el incidente en "nearbyIncident"
+POST http://localhost:8080/api/incidents
+Content-Type: application/json
+
+{ "id": "AVISO-2", "type": "FOREST_FIRE", "severity": 2, "latitude": 43.2310, "longitude": -4.3016 }
+
+### 3a. Es otra emergencia: se confirma
+POST http://localhost:8080/api/incidents?confirmNew=true
+Content-Type: application/json
+
+{ "id": "AVISO-2", "type": "FOREST_FIRE", "severity": 2, "latitude": 43.2310, "longitude": -4.3016 }
+
+### 3b. Es la misma: el aviso se añade al incidente (repetirlo no lo duplica)
+POST http://localhost:8080/api/incidents/INCIDENT_ID/detections
+Content-Type: application/json
+
+{ "id": "AVISO-2", "latitude": 43.2310, "longitude": -4.3016 }

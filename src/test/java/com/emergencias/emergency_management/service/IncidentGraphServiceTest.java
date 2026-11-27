@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.service;
 
+import com.emergencias.emergency_management.dto.NearbyIncident;
 import com.emergencias.emergency_management.config.GroupingProperties;
 import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
@@ -295,6 +296,84 @@ class IncidentGraphServiceTest {
         order.verify(incidentRepository).findIncidentToJoin(anyString(), anyDouble(),
                 anyDouble(), anyDouble(), any(), any());
         order.verify(incidentRepository).save(any());
+    }
+
+    @Test
+    void eventRegisteredWhileWaitingForTheLockIsIgnored() {
+        Incident registered = new Incident("H-1", "FOREST_FIRE", 0, null,
+                IncidentStatus.ACTIVE, CABUERNIGA);
+        when(incidentRepository.findById("H-1"))
+                .thenReturn(Optional.empty(), Optional.of(registered));
+
+        IncidentSaveResult result = incidentGraphService.save(hotspot("H-1"));
+
+        assertFalse(result.created());
+        assertFalse(result.grouped());
+        assertSame(registered, result.incident());
+        verify(incidentRepository).lockRegistrations();
+        verify(incidentRepository, never()).save(any());
+    }
+
+    @Test
+    void nearbyOpenIncidentIsReportedWithItsDistance() {
+        Incident open = new Incident("FIRMS-1", "FOREST_FIRE", 0, null,
+                IncidentStatus.ACTIVE, CABUERNIGA);
+        open.setSource(IncidentSource.FIRMS);
+        open.setDetectionCount(3L);
+        Instant observedAt = Instant.parse("2026-03-21T02:00:00Z");
+        when(incidentRepository.findIncidentToJoin("FOREST_FIRE", 43.2265, -4.3016, 2000.0,
+                observedAt.minus(Duration.ofHours(24)), observedAt.plus(Duration.ofHours(24))))
+                .thenReturn(Optional.of("FIRMS-1"));
+        givenOnlyIncident(open);
+        when(incidentRepository.distanceToIncident("FIRMS-1", 43.2265, -4.3016))
+                .thenReturn(Optional.of(812.4));
+
+        NearbyIncident nearby = incidentGraphService
+                .findNearbyOpenIncident(manualReport(observedAt))
+                .orElseThrow();
+
+        assertEquals("FIRMS-1", nearby.getIncidentId());
+        assertEquals(812, nearby.getDistanceMeters());
+        assertEquals(3, nearby.getDetectionCount());
+        assertEquals(IncidentSource.FIRMS, nearby.getSource());
+    }
+
+    @Test
+    void reportWithoutCoordinatesIsNotCheckedForNearbyIncidents() {
+        IncidentEvent report = IncidentEvent.builder()
+                .id("M-1")
+                .type("FOREST_FIRE")
+                .severity(2)
+                .zoneCode("39014")
+                .build();
+
+        assertTrue(incidentGraphService.findNearbyOpenIncident(report).isEmpty());
+        verifyNoInteractions(incidentRepository);
+    }
+
+    @Test
+    void reportSentAgainIsNotCheckedForNearbyIncidents() {
+        Incident registered = new Incident("M-1", "FOREST_FIRE", 2, null,
+                IncidentStatus.ACTIVE, CABUERNIGA);
+        givenOnlyIncident(registered);
+
+        assertTrue(incidentGraphService
+                .findNearbyOpenIncident(manualReport(Instant.now()))
+                .isEmpty());
+        verify(incidentRepository, never()).findIncidentToJoin(
+                anyString(), anyDouble(), anyDouble(), anyDouble(), any(), any());
+    }
+
+    private static IncidentEvent manualReport(Instant occurredAt) {
+        return IncidentEvent.builder()
+                .id("M-1")
+                .type("FOREST_FIRE")
+                .severity(2)
+                .latitude(43.2265)
+                .longitude(-4.3016)
+                .occurredAt(occurredAt)
+                .source(IncidentSource.MANUAL)
+                .build();
     }
 
     @Test
