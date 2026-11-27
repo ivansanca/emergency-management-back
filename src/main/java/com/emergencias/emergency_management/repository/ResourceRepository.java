@@ -1,5 +1,6 @@
 package com.emergencias.emergency_management.repository;
 
+import com.emergencias.emergency_management.dto.ResourceSummary;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.repository.projection.ResourceCandidateRow;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
@@ -167,4 +168,34 @@ public interface ResourceRepository
     Optional<Instant> assignToIncident(
             @Param("resourceId") String resourceId,
             @Param("incidentId") String incidentId);
+
+    /**
+     * Resources that match the optional filters (a null parameter does not
+     * filter), with the incident each one is assigned to, if any. The zone is
+     * the municipality of the station where the resource is based.
+     */
+    @Query("""
+        MATCH (r:Resource)
+        OPTIONAL MATCH (r)-[:LOCATED_IN]->(z:Zone)
+        OPTIONAL MATCH (r)-[:HAS_TYPE]->(rt:ResourceType)
+        OPTIONAL MATCH (r)-[a:ASSIGNED_TO]->(i:Incident)
+        WHERE a.releasedAt IS NULL
+        WITH r, z, rt, head(collect(i.id)) AS assignedIncidentId
+        WHERE ($zoneCode IS NULL OR z.ineCode = $zoneCode)
+          AND ($type IS NULL OR coalesce(rt.name, r.type) = $type)
+          AND ($available IS NULL OR r.available = $available)
+        RETURN r.id AS id,
+               r.name AS name,
+               coalesce(rt.name, r.type) AS type,
+               coalesce(rt.aerial, false) AS aerial,
+               coalesce(r.available, false) AS available,
+               z.ineCode AS zoneCode,
+               z.name AS zoneName,
+               assignedIncidentId
+        ORDER BY zoneName ASC, id ASC
+        """)
+    List<ResourceSummary> findSummaries(
+            @Param("zoneCode") String zoneCode,
+            @Param("type") String type,
+            @Param("available") Boolean available);
 }

@@ -87,6 +87,7 @@ class IncidentLifecycleIntegrationTest {
         assertEquals(1, graph.count("""
                 MATCH (:Resource {id: $id})-[a:ASSIGNED_TO]->(i:Incident)
                 WHERE a.releasedAt IS NOT NULL AND i.status = 'CLOSED'
+                  AND i.closedAt IS NOT NULL
                 RETURN count(a)
                 """, Map.of("id", RESOURCE)));
         assertThrows(

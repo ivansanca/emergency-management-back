@@ -2,6 +2,7 @@ package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.api.dto.ResourceRequest;
 import com.emergencias.emergency_management.dto.ResourceResponse;
+import com.emergencias.emergency_management.dto.ResourceSummary;
 import com.emergencias.emergency_management.exception.ConflictException;
 import com.emergencias.emergency_management.exception.InvalidRequestException;
 import com.emergencias.emergency_management.model.EmergencyResource;
@@ -17,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -143,5 +145,16 @@ class ResourceServiceTest {
                 () -> resourceService.create(request(true, "39022")));
 
         verify(resourceRepository, never()).save(any());
+    }
+
+    @Test
+    void listPassesTheFiltersToTheQuery() {
+        List<ResourceSummary> resources = List.of(new ResourceSummary(
+                "BRP-41", "Autobomba", "RURAL_ENGINE", false, true,
+                "39022", "Cillorigo de Liébana", null));
+        when(resourceRepository.findSummaries("39022", "RURAL_ENGINE", true))
+                .thenReturn(resources);
+
+        assertSame(resources, resourceService.list("39022", "RURAL_ENGINE", true));
     }
 }

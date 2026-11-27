@@ -2,6 +2,7 @@ package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.api.dto.ResourceRequest;
 import com.emergencias.emergency_management.dto.ResourceResponse;
+import com.emergencias.emergency_management.dto.ResourceSummary;
 import com.emergencias.emergency_management.exception.ConflictException;
 import com.emergencias.emergency_management.exception.InvalidRequestException;
 import com.emergencias.emergency_management.model.EmergencyResource;
@@ -12,9 +13,12 @@ import com.emergencias.emergency_management.repository.ResourceTypeRepository;
 import com.emergencias.emergency_management.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
- * Registration of emergency resources.
+ * Registration and listing of emergency resources.
  */
 @Service
 @RequiredArgsConstructor
@@ -53,5 +57,14 @@ public class ResourceService {
                 zone);
 
         return ResourceResponse.from(resourceRepository.save(resource));
+    }
+
+    /**
+     * Resources filtered by the municipality of their station, their type
+     * and whether they are available; a null filter does not filter.
+     */
+    @Transactional(readOnly = true)
+    public List<ResourceSummary> list(String zoneCode, String type, Boolean available) {
+        return resourceRepository.findSummaries(zoneCode, type, available);
     }
 }
