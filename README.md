@@ -46,6 +46,7 @@ ejecuta los scripts de [`neo4j`](neo4j) en orden, desde Neo4j Browser o con
 | `03-roads.cypher`          | Carreteras entre municipios vecinos (km y minutos)  |
 | `04-resources.cypher`      | Vehículos de los parques de bomberos                |
 | `05-detections.cypher`     | Primera detección de los incidentes ya registrados  |
+| `06-closed-at.cypher`      | Fecha de cierre aproximada de los ya cerrados       |
 
 ### 3. Arrancar la aplicación
 
@@ -63,12 +64,25 @@ arrancar. Para comprobar que está levantada: `GET /actuator/health`.
 | POST   | `/api/incidents`                             | Registra un incidente (lo publica en Kafka, responde 202) |
 | POST   | `/api/incidents?confirmNew=true`             | Lo registra aunque haya un incidente abierto cerca      |
 | POST   | `/api/incidents/{id}/detections`             | Añade un aviso al incidente (`{"latitude": …, "longitude": …}`) |
+| GET    | `/api/incidents`                             | Lista de incidentes, con filtros y paginada (ver abajo) |
+| GET    | `/api/incidents/{id}`                        | Detalle: el incidente, sus detecciones y sus asignaciones |
 | GET    | `/api/incidents/{id}/recommendations`        | Recursos recomendados para el incidente                 |
 | POST   | `/api/incidents/{id}/assignments`            | Asigna un recurso (`{"resourceId": "..."}`)             |
 | POST   | `/api/incidents/{id}/close`                  | Cierra el incidente y libera sus recursos               |
 | POST   | `/api/resources`                             | Da de alta un recurso                                   |
+| GET    | `/api/resources`                             | Recursos; filtros `zoneCode`, `type` y `available`      |
+| GET    | `/api/zones`                                 | Municipios por orden alfabético                         |
 
 Los errores se devuelven en formato Problem Details (RFC 9457).
+
+La lista de incidentes admite los filtros `status` (`ACTIVE`, `CLOSED`),
+`type`, `source` (`MANUAL`, `FIRMS`…), `zoneCode` y un intervalo `from`/`to`
+(ISO 8601, por ejemplo `2026-03-21T00:00:00Z`), que selecciona los incidentes
+activos en algún momento del intervalo: los que empezaron antes de `to` y no
+habían terminado antes de `from` (un incidente abierto no ha terminado; uno
+cerrado termina al cerrarse, `closedAt`). Se ordena por la última detección, la
+más reciente primero, y se pagina con `page` (desde 0) y `size` (20 por
+defecto, como mucho 100). Ver [`http/consultas.http`](http/consultas.http).
 
 Un alta con coordenadas cerca de un incidente abierto del mismo tipo (a menos
 del radio de agrupación y dentro de la ventana de 24 h) no se registra: la API

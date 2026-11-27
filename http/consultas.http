@@ -1,0 +1,22 @@
+### Consultas de la API
+
+### Incidentes activos, los más recientes primero
+GET http://localhost:8080/api/incidents?status=ACTIVE
+
+### Incendios forestales detectados por satélite en las últimas horas (ajusta la fecha)
+GET http://localhost:8080/api/incidents?type=FOREST_FIRE&source=FIRMS&from=2026-11-27T00:00:00Z
+
+### Incidentes de un municipio, segunda página de 10
+GET http://localhost:8080/api/incidents?zoneCode=39075&page=1&size=10
+
+### Detalle de un incidente: detecciones y asignaciones (sustituye INCIDENT_ID)
+GET http://localhost:8080/api/incidents/INCIDENT_ID
+
+### Recursos disponibles de un parque (municipio)
+GET http://localhost:8080/api/resources?zoneCode=39087&available=true
+
+### Recursos asignados ahora (con el incidente al que están asignados)
+GET http://localhost:8080/api/resources?available=false
+
+### Municipios
+GET http://localhost:8080/api/zones

@@ -19,7 +19,8 @@ import java.time.Instant;
  * Each event that reports the incident is stored as a {@code Detection} node
  * linked to it, written with Cypher in {@code IncidentRepository}.
  * {@code detectionCount} and {@code lastDetectedAt} summarise them, so that
- * the incident does not load its detections.
+ * the incident does not load its detections. {@code closedAt} is set when an
+ * operator closes it.
  */
 @Node("Incident")
 @Getter
@@ -42,6 +43,7 @@ public class Incident {
     private Boolean notified;
     private Long detectionCount;
     private Instant lastDetectedAt;
+    private Instant closedAt;
 
     @Relationship(
             type = "OCCURRED_IN",

@@ -1,11 +1,15 @@
 package com.emergencias.emergency_management.repository;
 
+import com.emergencias.emergency_management.dto.AssignmentSummary;
+import com.emergencias.emergency_management.dto.DetectionSummary;
+import com.emergencias.emergency_management.dto.IncidentSummary;
 import com.emergencias.emergency_management.model.Incident;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,7 +24,8 @@ public interface IncidentRepository
 
     /**
      * Closes the incident and releases its resources in a single query.
-     * Assignments are kept, with their release time, as history.
+     * Assignments are kept, with their release time, as history, and the
+     * incident keeps the time it was closed.
      * <p>
      * Like the assignment, it takes the write lock before checking the status,
      * so that two simultaneous closes cannot both succeed. Returns empty when
@@ -33,7 +38,8 @@ public interface IncidentRepository
 
         WITH i
         WHERE coalesce(i.status, 'ACTIVE') <> 'CLOSED'
-        SET i.status = 'CLOSED'
+        SET i.status = 'CLOSED',
+            i.closedAt = datetime()
 
         WITH i
         OPTIONAL MATCH (r:Resource)-[a:ASSIGNED_TO]->(i)
@@ -169,4 +175,118 @@ public interface IncidentRepository
             @Param("observedAt") Instant observedAt,
             @Param("receivedAt") Instant receivedAt,
             @Param("source") String source);
+
+    // ---- Queries of the query API ----
+
+    /**
+     * Incidents that match the optional filters of {@link #search}; a null
+     * parameter does not filter. Shared by the page and its count so that
+     * both always select the same incidents.
+     * <p>
+     * The interval keeps the incidents active at some point of it: started
+     * before {@code to} and not finished before {@code from}. An open
+     * incident has not finished, however long ago it was last detected. A
+     * closed one finished when it was closed; incidents closed before
+     * {@code closedAt} existed fall back to their last detection.
+     */
+    String SEARCH_FILTER = """
+        MATCH (i:Incident)
+        OPTIONAL MATCH (i)-[:OCCURRED_IN]->(z:Zone)
+        WITH i, z
+        WHERE ($status IS NULL OR coalesce(i.status, 'ACTIVE') = $status)
+          AND ($type IS NULL OR i.type = $type)
+          AND ($source IS NULL OR coalesce(i.source, 'MANUAL') = $source)
+          AND ($zoneCode IS NULL OR z.ineCode = $zoneCode)
+          AND ($from IS NULL
+               OR coalesce(i.status, 'ACTIVE') <> 'CLOSED'
+               OR coalesce(i.closedAt, i.lastDetectedAt, i.occurredAt) >= $from)
+          AND ($to IS NULL OR i.occurredAt <= $to)
+        """;
+
+    /** Columns of {@link IncidentSummary}, for incident {@code i} in zone {@code z}. */
+    String SUMMARY_COLUMNS = """
+        RETURN i.id AS id,
+               i.type AS type,
+               i.severity AS severity,
+               coalesce(i.status, 'ACTIVE') AS status,
+               coalesce(i.source, 'MANUAL') AS source,
+               i.description AS description,
+               z.ineCode AS zoneCode,
+               z.name AS zoneName,
+               i.latitude AS latitude,
+               i.longitude AS longitude,
+               i.occurredAt AS occurredAt,
+               i.receivedAt AS receivedAt,
+               coalesce(i.lastDetectedAt, i.occurredAt) AS lastDetectedAt,
+               i.closedAt AS closedAt,
+               coalesce(i.detectionCount, 0) AS detectionCount,
+               COUNT { (:Resource)-[a:ASSIGNED_TO]->(i) WHERE a.releasedAt IS NULL }
+                   AS assignedResources
+        """;
+
+    /**
+     * One page of incidents, the most recently active first. The order uses
+     * the latest detection, so a fire that is still being detected stays at
+     * the top even if it started days ago.
+     */
+    @Query(SEARCH_FILTER + SUMMARY_COLUMNS + """
+        ORDER BY lastDetectedAt DESC, id ASC
+        SKIP $skip
+        LIMIT $limit
+        """)
+    List<IncidentSummary> search(
+            @Param("status") String status,
+            @Param("type") String type,
+            @Param("source") String source,
+            @Param("zoneCode") String zoneCode,
+            @Param("from") Instant from,
+            @Param("to") Instant to,
+            @Param("skip") long skip,
+            @Param("limit") long limit);
+
+    @Query(SEARCH_FILTER + """
+        RETURN count(i)
+        """)
+    long countSearch(
+            @Param("status") String status,
+            @Param("type") String type,
+            @Param("source") String source,
+            @Param("zoneCode") String zoneCode,
+            @Param("from") Instant from,
+            @Param("to") Instant to);
+
+    @Query("""
+        MATCH (i:Incident {id: $incidentId})
+        OPTIONAL MATCH (i)-[:OCCURRED_IN]->(z:Zone)
+        """ + SUMMARY_COLUMNS)
+    Optional<IncidentSummary> findSummary(
+            @Param("incidentId") String incidentId);
+
+    /** Detections of the incident in the order they were observed. */
+    @Query("""
+        MATCH (d:Detection)-[:DETECTION_OF]->(:Incident {id: $incidentId})
+        RETURN d.id AS id,
+               d.latitude AS latitude,
+               d.longitude AS longitude,
+               d.observedAt AS observedAt,
+               d.receivedAt AS receivedAt,
+               d.source AS source
+        ORDER BY observedAt ASC, id ASC
+        """)
+    List<DetectionSummary> findDetections(
+            @Param("incidentId") String incidentId);
+
+    /** Current and past assignments of the incident, oldest first. */
+    @Query("""
+        MATCH (r:Resource)-[a:ASSIGNED_TO]->(:Incident {id: $incidentId})
+        OPTIONAL MATCH (r)-[:HAS_TYPE]->(rt:ResourceType)
+        RETURN r.id AS resourceId,
+               r.name AS resourceName,
+               coalesce(rt.name, r.type) AS resourceType,
+               a.assignedAt AS assignedAt,
+               a.releasedAt AS releasedAt
+        ORDER BY assignedAt ASC, resourceId ASC
+        """)
+    List<AssignmentSummary> findAssignments(
+            @Param("incidentId") String incidentId);
 }
