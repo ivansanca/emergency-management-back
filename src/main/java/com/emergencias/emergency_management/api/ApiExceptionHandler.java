@@ -6,6 +6,7 @@ import com.emergencias.emergency_management.exception.EventRejectedException;
 import com.emergencias.emergency_management.exception.InfrastructureFailures;
 import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.exception.InvalidRequestException;
+import com.emergencias.emergency_management.exception.NearbyIncidentException;
 import com.emergencias.emergency_management.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -33,6 +34,22 @@ public class ApiExceptionHandler {
     public ProblemDetail handleConflict(ConflictException exception) {
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    /**
+     * A report close to an open incident. Besides the message, the incident
+     * and the id of the report go in their own fields, so that a client can
+     * offer the choices (new incident, same incident or cancel) without
+     * parsing the text, and reuse the id in the next request.
+     */
+    @ExceptionHandler(NearbyIncidentException.class)
+    public ProblemDetail handleNearbyIncident(NearbyIncidentException exception) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, exception.getMessage());
+        problem.setTitle("Incidente cercano");
+        problem.setProperty("reportId", exception.getReportId());
+        problem.setProperty("nearbyIncident", exception.getNearbyIncident());
+        return problem;
     }
 
     @ExceptionHandler({

@@ -1,5 +1,8 @@
 package com.emergencias.emergency_management.api;
 
+import com.emergencias.emergency_management.dto.NearbyIncident;
+import com.emergencias.emergency_management.exception.NearbyIncidentException;
+import java.util.Optional;
 import com.emergencias.emergency_management.api.dto.IncidentAcceptedResponse;
 import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
@@ -16,6 +19,10 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,7 +52,7 @@ class IncidentControllerTest {
                 .build();
 
         ResponseEntity<IncidentAcceptedResponse> response =
-                incidentController.create(event);
+                incidentController.create(event, false);
 
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         String generatedId = response.getBody().getIncidentId();
@@ -69,11 +76,53 @@ class IncidentControllerTest {
                 .build();
 
         ResponseEntity<IncidentAcceptedResponse> response =
-                incidentController.create(event);
+                incidentController.create(event, false);
 
         assertEquals("FIRE-001", response.getBody().getIncidentId());
         assertEquals(IncidentSource.MANUAL, event.getSource());
         verify(incidentProducer).publish(event);
+    }
+
+    @Test
+    void createAsksForConfirmationWhenAnOpenIncidentIsNear() {
+        IncidentEvent event = nearReport();
+        when(incidentGraphService.findNearbyOpenIncident(any()))
+                .thenReturn(Optional.of(NearbyIncident.builder()
+                        .incidentId("FIRMS-1")
+                        .type("FOREST_FIRE")
+                        .detectionCount(3)
+                        .distanceMeters(800)
+                        .build()));
+
+        NearbyIncidentException exception = assertThrows(
+                NearbyIncidentException.class,
+                () -> incidentController.create(event, false));
+
+        assertEquals("FIRMS-1", exception.getNearbyIncident().getIncidentId());
+        assertEquals(event.getId(), exception.getReportId());
+        assertFalse(exception.getReportId().isBlank());
+        verifyNoInteractions(incidentProducer);
+    }
+
+    @Test
+    void confirmedCreateIsPublishedWithoutLookingForNearbyIncidents() {
+        IncidentEvent event = nearReport();
+
+        ResponseEntity<IncidentAcceptedResponse> response =
+                incidentController.create(event, true);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        verify(incidentGraphService, never()).findNearbyOpenIncident(any());
+        verify(incidentProducer).publish(event);
+    }
+
+    private static IncidentEvent nearReport() {
+        return IncidentEvent.builder()
+                .type("FOREST_FIRE")
+                .severity(2)
+                .latitude(43.2265)
+                .longitude(-4.3016)
+                .build();
     }
 
     @Test
@@ -85,7 +134,7 @@ class IncidentControllerTest {
 
         assertThrows(
                 InvalidIncidentEventException.class,
-                () -> incidentController.create(event));
+                () -> incidentController.create(event, false));
 
         verifyNoInteractions(incidentProducer);
     }
@@ -102,7 +151,7 @@ class IncidentControllerTest {
 
         assertThrows(
                 InvalidIncidentEventException.class,
-                () -> incidentController.create(event));
+                () -> incidentController.create(event, false));
 
         verifyNoInteractions(incidentProducer);
     }

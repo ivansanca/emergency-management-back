@@ -80,6 +80,22 @@ public interface IncidentRepository
     Long lockRegistrations();
 
     /**
+     * Distance in metres from a position to the nearest located detection of
+     * the incident, empty when none of its detections has a position.
+     */
+    @Query("""
+        WITH point({latitude: $latitude, longitude: $longitude}) AS here
+        MATCH (d:Detection)-[:DETECTION_OF]->(:Incident {id: $incidentId})
+        WHERE d.location IS NOT NULL
+
+        RETURN min(point.distance(d.location, here))
+        """)
+    Optional<Double> distanceToIncident(
+            @Param("incidentId") String incidentId,
+            @Param("latitude") double latitude,
+            @Param("longitude") double longitude);
+
+    /**
      * Incident that holds the detection with the given id, if any.
      */
     @Query("""

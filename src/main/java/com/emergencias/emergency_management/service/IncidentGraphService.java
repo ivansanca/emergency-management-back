@@ -1,6 +1,7 @@
 package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.config.GroupingProperties;
+import com.emergencias.emergency_management.dto.NearbyIncident;
 import com.emergencias.emergency_management.exception.InvalidIncidentEventException;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.model.Incident;
@@ -57,24 +58,25 @@ public class IncidentGraphService {
      * <p>
      * Repeated events are recognised before taking the lock, so that they do
      * not wait for it: after a restart or an outage most events are
-     * duplicates. The same id never reaches both consumers, because operator
-     * reports and detections come from different producers. If it did, the
-     * uniqueness constraints would reject the second write and its retry
-     * would find the event already registered.
+     * duplicates. They are checked again once the lock is taken, in case
+     * another consumer registered the same event while this one waited;
+     * otherwise saving the incident would overwrite the one already stored.
      */
     @Transactional
     public IncidentSaveResult save(IncidentEvent event) {
         IncidentEventValidator.validate(event);
 
-        Optional<Incident> existing = incidentRepository.findById(event.getId())
-                .or(() -> incidentRepository.findIncidentIdByDetectionId(event.getId())
-                        .flatMap(incidentRepository::findById));
-
+        Optional<Incident> existing = findRegistered(event.getId());
         if (existing.isPresent()) {
             return IncidentSaveResult.existing(existing.get());
         }
 
         incidentRepository.lockRegistrations();
+
+        existing = findRegistered(event.getId());
+        if (existing.isPresent()) {
+            return IncidentSaveResult.existing(existing.get());
+        }
 
         requireApplicableRule(event);
 
@@ -124,15 +126,54 @@ public class IncidentGraphService {
     }
 
     /**
-     * Open incident of the same type with a detection within the radius of
-     * the type and the time window, the nearest if there are several. Only
-     * automatic detections with coordinates are grouped.
+     * Open incident of the same type close to a new report of an operator,
+     * within the grouping radius and time window, the nearest if there are
+     * several. Reports are never grouped automatically: the API uses this to
+     * ask the operator whether the report is the same emergency before
+     * opening a second incident. Reports without coordinates, and types
+     * without a radius, are not checked. Neither is a report sent again
+     * after it was registered: otherwise a client retrying its request would
+     * be told that its own incident is nearby.
+     */
+    @Transactional(readOnly = true)
+    public Optional<NearbyIncident> findNearbyOpenIncident(IncidentEvent event) {
+        if (!event.hasCoordinates()
+                || (event.getId() != null && findRegistered(event.getId()).isPresent())) {
+            return Optional.empty();
+        }
+
+        Instant observedAt = event.getOccurredAt() != null
+                ? event.getOccurredAt()
+                : Instant.now();
+
+        return findIncidentNear(event, observedAt)
+                .map(incident -> toNearby(incident, event));
+    }
+
+    /** Incident that holds the event, as its incident or as a detection. */
+    private Optional<Incident> findRegistered(String eventId) {
+        return incidentRepository.findById(eventId)
+                .or(() -> incidentRepository.findIncidentIdByDetectionId(eventId)
+                        .flatMap(incidentRepository::findById));
+    }
+
+    /**
+     * Incident an automatic detection joins. Only automatic detections with
+     * coordinates are grouped.
      */
     private Optional<Incident> incidentToJoin(IncidentEvent event, Instant observedAt) {
         if (!isAutomatic(event) || !event.hasCoordinates()) {
             return Optional.empty();
         }
 
+        return findIncidentNear(event, observedAt);
+    }
+
+    /**
+     * Open incident of the same type with a detection within the radius of
+     * the type and the time window, the nearest if there are several.
+     */
+    private Optional<Incident> findIncidentNear(IncidentEvent event, Instant observedAt) {
         return groupingProperties.radiusFor(event.getType())
                 .flatMap(radius -> incidentRepository.findIncidentToJoin(
                         event.getType(),
@@ -142,6 +183,25 @@ public class IncidentGraphService {
                         observedAt.minus(groupingProperties.getWindow()),
                         observedAt.plus(groupingProperties.getWindow())))
                 .flatMap(incidentRepository::findById);
+    }
+
+    private NearbyIncident toNearby(Incident incident, IncidentEvent event) {
+        double distance = incidentRepository.distanceToIncident(
+                        incident.getId(), event.getLatitude(), event.getLongitude())
+                .orElse(0.0);
+
+        return NearbyIncident.builder()
+                .incidentId(incident.getId())
+                .type(incident.getType())
+                .severity(incident.getSeverity())
+                .source(incident.getSource())
+                .detectionCount(incident.getDetectionCount() == null
+                        ? 0 : incident.getDetectionCount())
+                .lastDetectedAt(incident.getLastDetectedAt() != null
+                        ? incident.getLastDetectedAt()
+                        : incident.getOccurredAt())
+                .distanceMeters(Math.round(distance))
+                .build();
     }
 
     private static boolean isAutomatic(IncidentEvent event) {

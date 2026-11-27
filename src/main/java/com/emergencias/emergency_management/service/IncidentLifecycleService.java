@@ -2,11 +2,14 @@ package com.emergencias.emergency_management.service;
 
 import com.emergencias.emergency_management.dto.AssignmentResponse;
 import com.emergencias.emergency_management.dto.CloseIncidentResponse;
+import com.emergencias.emergency_management.dto.DetectionAddedResponse;
 import com.emergencias.emergency_management.exception.ConflictException;
+import com.emergencias.emergency_management.exception.InvalidRequestException;
 import com.emergencias.emergency_management.exception.NotFoundException;
 import com.emergencias.emergency_management.messaging.producer.IncidentNotificationProducer;
 import com.emergencias.emergency_management.model.EmergencyResource;
 import com.emergencias.emergency_management.model.Incident;
+import com.emergencias.emergency_management.model.IncidentSource;
 import com.emergencias.emergency_management.model.IncidentStatus;
 import com.emergencias.emergency_management.repository.IncidentRepository;
 import com.emergencias.emergency_management.repository.ResourceRepository;
@@ -17,10 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
- * Decisions an operator takes on an incident: assigning resources and closing
- * it. The system recommends; a person decides.
+ * Decisions an operator takes on an incident: assigning resources, adding a
+ * report to it and closing it. The system recommends; a person decides.
  */
 @Service
 @RequiredArgsConstructor
@@ -88,6 +93,76 @@ public class IncidentLifecycleService {
         return response;
     }
 
+    /**
+     * Adds a report of an operator to an open incident as one more detection,
+     * of manual origin, when the operator confirms that it is the same
+     * emergency. The incident keeps a record of every report.
+     * <p>
+     * Nothing is notified and the severity does not change, as when a
+     * hotspot joins an incident: the incident was already notified and its
+     * severity is set by the operator. The report keeps its id, so sending it
+     * again does not add it twice. It takes the same lock as the registration
+     * of incidents, so it cannot interleave with a grouping.
+     */
+    @Transactional
+    public DetectionAddedResponse addReport(
+            String incidentId,
+            String reportId,
+            Double latitude,
+            Double longitude,
+            Instant occurredAt) {
+
+        requireValidPosition(latitude, longitude);
+
+        String detectionId = reportId == null || reportId.isBlank()
+                ? UUID.randomUUID().toString()
+                : reportId;
+
+        incidentRepository.lockRegistrations();
+
+        Incident incident = findIncident(incidentId);
+
+        Optional<String> holder =
+                incidentRepository.findIncidentIdByDetectionId(detectionId);
+        if (holder.isPresent()) {
+            if (!holder.get().equals(incidentId)) {
+                throw new ConflictException("El aviso " + detectionId
+                        + " ya pertenece al incidente " + holder.get());
+            }
+            return DetectionAddedResponse.builder()
+                    .incidentId(incidentId)
+                    .detectionId(detectionId)
+                    .detectionCount(incident.getDetectionCount() == null
+                            ? 0 : incident.getDetectionCount())
+                    .added(false)
+                    .build();
+        }
+
+        if (incident.isClosed()) {
+            throw new ConflictException(
+                    "El incidente " + incidentId + " está cerrado");
+        }
+
+        Instant receivedAt = Instant.now();
+        Long detectionCount = incidentRepository.addDetection(
+                incidentId,
+                detectionId,
+                latitude,
+                longitude,
+                occurredAt != null ? occurredAt : receivedAt,
+                receivedAt,
+                IncidentSource.MANUAL.name());
+
+        log.info("Aviso {} añadido al incidente {}", detectionId, incidentId);
+
+        return DetectionAddedResponse.builder()
+                .incidentId(incidentId)
+                .detectionId(detectionId)
+                .detectionCount(detectionCount == null ? 0 : detectionCount)
+                .added(true)
+                .build();
+    }
+
     @Transactional
     public CloseIncidentResponse close(String incidentId) {
 
@@ -115,6 +190,19 @@ public class IncidentLifecycleService {
         incidentNotificationProducer.incidentClosed(response);
 
         return response;
+    }
+
+    /** Both coordinates or none, and inside Cantabria, as for a new incident. */
+    private static void requireValidPosition(Double latitude, Double longitude) {
+        if ((latitude == null) != (longitude == null)) {
+            throw new InvalidRequestException(
+                    "Hay que indicar las dos coordenadas o ninguna");
+        }
+        if (latitude != null
+                && !IncidentEventValidator.insideCantabria(latitude, longitude)) {
+            throw new InvalidRequestException(
+                    "Las coordenadas están fuera de Cantabria");
+        }
     }
 
     private Incident findIncident(String incidentId) {

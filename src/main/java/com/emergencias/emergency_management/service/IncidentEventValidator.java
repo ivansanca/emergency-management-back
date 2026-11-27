@@ -67,7 +67,7 @@ public final class IncidentEventValidator {
      * Bounding box around Cantabria with some margin. It is a coarse filter:
      * it also contains border areas of the neighbouring provinces.
      */
-    private static boolean insideCantabria(double latitude, double longitude) {
+    static boolean insideCantabria(double latitude, double longitude) {
         return latitude >= MIN_LATITUDE && latitude <= MAX_LATITUDE
                 && longitude >= MIN_LONGITUDE && longitude <= MAX_LONGITUDE;
     }
