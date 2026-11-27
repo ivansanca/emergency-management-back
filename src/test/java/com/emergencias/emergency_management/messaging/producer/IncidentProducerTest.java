@@ -56,7 +56,7 @@ class IncidentProducerTest {
         assertDoesNotThrow(() -> producer.publish(EVENT));
 
         verify(kafkaTemplate).send(
-                eq(KafkaTopics.EMERGENCY_EVENTS),
+                eq(KafkaTopics.EMERGENCY_EVENTS_MANUAL),
                 eq("incident-1"),
                 contains("FOREST_FIRE"));
     }

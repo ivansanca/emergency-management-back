@@ -85,12 +85,19 @@ IDE.
 
 | Topic                     | Uso                                                        |
 |---------------------------|------------------------------------------------------------|
-| `emergency-events`        | Entrada de incidentes, de cualquier origen                 |
-| `emergency-events-dlt`    | Eventos rechazados (inválidos o que han agotado reintentos) |
+| `emergency-events`        | Entrada de detecciones automáticas (servicio de sensores)  |
+| `emergency-events-dlt`    | Detecciones rechazadas (inválidas o que han agotado reintentos) |
+| `emergency-events-manual` | Entrada de las altas del operador (`POST /api/incidents`)  |
+| `emergency-events-manual-dlt` | Altas rechazadas                                       |
 | `incident-created`        | Notificación: incidente registrado                         |
 | `incident-recommendation` | Notificación: recomendación calculada                      |
 | `resource-assigned`       | Notificación: recurso asignado                             |
 | `incident-closed`         | Notificación: incidente cerrado                            |
+
+Las altas del operador tienen su propio topic y su propio consumidor para que
+nunca esperen detrás de miles de focos de satélite. Los dos consumidores
+registran los incidentes de uno en uno (un bloqueo en Neo4j), así que un alta y
+un foco del mismo incendio procesados a la vez no abren dos incidentes.
 
 Las notificaciones usan la clave del incidente, así que las de un mismo
 incidente llegan en orden.

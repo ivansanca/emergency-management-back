@@ -61,6 +61,25 @@ public interface IncidentRepository
             @Param("incidentId") String incidentId);
 
     /**
+     * Takes the write lock of a single lock node until the transaction ends,
+     * so that incidents are registered one at a time.
+     * <p>
+     * Grouping reads the open incidents and then writes. Two consumers doing
+     * it at once could both miss each other and register the same fire twice.
+     * Setting a property takes the write lock even if the node already exists;
+     * the second transaction waits for the first to commit and then sees its
+     * incident. The uniqueness constraint on the lock node makes the
+     * {@code MERGE} safe when the node does not exist yet.
+     */
+    @Query("""
+        MERGE (l:IncidentRegistrationLock {id: 'incident-registration'})
+        SET l.lockedAt = datetime()
+
+        RETURN count(l)
+        """)
+    Long lockRegistrations();
+
+    /**
      * Incident that holds the detection with the given id, if any.
      */
     @Query("""

@@ -24,6 +24,16 @@ public class KafkaTopicsConfig {
     }
 
     @Bean
+    public NewTopic manualEventsTopic() {
+        return topic(KafkaTopics.EMERGENCY_EVENTS_MANUAL);
+    }
+
+    @Bean
+    public NewTopic manualEventsDeadLetterTopic() {
+        return topic(KafkaTopics.EMERGENCY_EVENTS_MANUAL_DLT);
+    }
+
+    @Bean
     public NewTopic incidentCreatedTopic() {
         return topic(KafkaTopics.INCIDENT_CREATED);
     }

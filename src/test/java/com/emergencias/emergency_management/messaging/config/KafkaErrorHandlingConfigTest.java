@@ -63,6 +63,19 @@ class KafkaErrorHandlingConfigTest {
     }
 
     @Test
+    void manualEventsHaveTheirOwnDeadLetterTopic() {
+        ConsumerRecord<String, String> manual =
+                new ConsumerRecord<>(KafkaTopics.EMERGENCY_EVENTS_MANUAL, 0, 0L,
+                        "incident-1", "{\"type\":\"FOREST_FIRE\"}");
+
+        TopicPartition destination = KafkaErrorHandlingConfig
+                .deadLetterDestination(manual, new IllegalArgumentException());
+
+        assertEquals(KafkaTopics.EMERGENCY_EVENTS_MANUAL_DLT, destination.topic());
+        assertEquals(-1, destination.partition());
+    }
+
+    @Test
     void invalidEventGoesToDeadLetterWithoutRetries() {
         List<Exception> recovered = new ArrayList<>();
         DefaultErrorHandler errorHandler = KafkaErrorHandlingConfig

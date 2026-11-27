@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -33,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -189,6 +191,7 @@ class IncidentGraphServiceTest {
         assertSame(existing, result.incident());
         assertEquals(2, existing.getSeverity());
         verify(incidentRepository, never()).save(any());
+        verify(incidentRepository, never()).lockRegistrations();
         verifyNoInteractions(zoneRepository);
     }
 
@@ -280,6 +283,21 @@ class IncidentGraphServiceTest {
     }
 
     @Test
+    void registrationTakesTheLockBeforeLookingForAnIncidentToJoin() {
+        givenRuleFor("FOREST_FIRE", 0);
+        when(zoneRepository.findNearest(43.2265, -4.3016))
+                .thenReturn(Optional.of(CABUERNIGA));
+
+        incidentGraphService.save(hotspot("H-1"));
+
+        InOrder order = inOrder(incidentRepository);
+        order.verify(incidentRepository).lockRegistrations();
+        order.verify(incidentRepository).findIncidentToJoin(anyString(), anyDouble(),
+                anyDouble(), anyDouble(), any(), any());
+        order.verify(incidentRepository).save(any());
+    }
+
+    @Test
     void hotspotNearAnOpenIncidentIsAddedToIt() {
         givenRuleFor("FOREST_FIRE", 0);
         Incident open = new Incident("H-1", "FOREST_FIRE", 0, null,
@@ -317,6 +335,7 @@ class IncidentGraphServiceTest {
         assertSame(holder, result.incident());
         verify(incidentRepository, never()).addDetection(
                 any(), any(), any(), any(), any(), any(), any());
+        verify(incidentRepository, never()).lockRegistrations();
     }
 
     @Test
