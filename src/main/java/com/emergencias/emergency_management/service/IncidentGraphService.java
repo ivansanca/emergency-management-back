@@ -49,8 +49,18 @@ public class IncidentGraphService {
      * a new one.
      * <p>
      * The incident and its first detection are written in one transaction.
-     * With a single consumer of {@code emergency-events}, two detections are
-     * never grouped at the same time.
+     * Registrations are serialised with a lock in the graph: automatic and
+     * manual events have separate consumers, and without the lock a report
+     * and a hotspot of the same fire processed at once could open two
+     * incidents. The lock is held for a few milliseconds, the length of one
+     * registration.
+     * <p>
+     * Repeated events are recognised before taking the lock, so that they do
+     * not wait for it: after a restart or an outage most events are
+     * duplicates. The same id never reaches both consumers, because operator
+     * reports and detections come from different producers. If it did, the
+     * uniqueness constraints would reject the second write and its retry
+     * would find the event already registered.
      */
     @Transactional
     public IncidentSaveResult save(IncidentEvent event) {
@@ -63,6 +73,8 @@ public class IncidentGraphService {
         if (existing.isPresent()) {
             return IncidentSaveResult.existing(existing.get());
         }
+
+        incidentRepository.lockRegistrations();
 
         requireApplicableRule(event);
 

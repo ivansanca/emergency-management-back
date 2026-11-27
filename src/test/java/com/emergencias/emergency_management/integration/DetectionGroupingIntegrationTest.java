@@ -12,6 +12,10 @@ import org.springframework.data.neo4j.core.Neo4jClient;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -164,6 +168,53 @@ class DetectionGroupingIntegrationTest {
         save(hotspot("H-1", 0, NOW));
 
         assertTrue(save(sensor("S-1", 0)).created());
+    }
+
+    /**
+     * Two hotspots of the same fire registered at the same moment by two
+     * threads, as the automatic and the manual consumers can do: the lock
+     * makes the second one wait and join the incident of the first. Repeated
+     * so that, without the lock, the race would show up.
+     */
+    @Test
+    void simultaneousHotspotsOfTheSameFireOpenASingleIncident() throws Exception {
+        // As in neo4j/00-constraints.cypher; it makes MERGE of the lock node safe.
+        neo4jClient.query("""
+                CREATE CONSTRAINT incident_registration_lock_id IF NOT EXISTS
+                FOR (l:IncidentRegistrationLock) REQUIRE l.id IS UNIQUE
+                """).run();
+        int rounds = 10;
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            for (int round = 0; round < rounds; round++) {
+                // Rounds 8 km apart southwards, so that all of them stay inside
+                // Cantabria (43.40 + 10 x 10 km would leave it).
+                double north = -round * 8 * ONE_KM;
+                String suffix = "-" + round;
+                CyclicBarrier start = new CyclicBarrier(2);
+
+                Future<IncidentSaveResult> first = pool.submit(() -> {
+                    start.await();
+                    return save(hotspot("A" + suffix, north, NOW));
+                });
+                Future<IncidentSaveResult> second = pool.submit(() -> {
+                    start.await();
+                    return save(hotspot("B" + suffix, north + 0.5 * ONE_KM, NOW));
+                });
+
+                IncidentSaveResult a = first.get();
+                IncidentSaveResult b = second.get();
+                assertTrue(a.created() ^ b.created(), "round " + round);
+                assertTrue(a.grouped() ^ b.grouped(), "round " + round);
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+
+        assertEquals(rounds, incidents());
+        assertEquals(2L * rounds, graph.count(
+                "MATCH (:Detection)-[:DETECTION_OF]->(:Incident) RETURN count(*)",
+                Map.of()));
     }
 
     private IncidentSaveResult save(IncidentEvent event) {

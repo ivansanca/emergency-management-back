@@ -18,6 +18,10 @@ FOR (r:DecisionRule) REQUIRE r.id IS UNIQUE;
 CREATE CONSTRAINT detection_id_unique IF NOT EXISTS
 FOR (d:Detection) REQUIRE d.id IS UNIQUE;
 
+// Nodo de bloqueo que serializa el registro de incidentes (ver IncidentRepository)
+CREATE CONSTRAINT incident_registration_lock_id IF NOT EXISTS
+FOR (l:IncidentRegistrationLock) REQUIRE l.id IS UNIQUE;
+
 // Indice espacial para buscar detecciones cercanas al agrupar
 CREATE POINT INDEX detection_location IF NOT EXISTS
 FOR (d:Detection) ON (d.location);

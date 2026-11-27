@@ -108,14 +108,19 @@ public class KafkaErrorHandlingConfig {
     }
 
     /**
-     * Partition -1 lets Kafka choose the partition, so the dead letter topic
-     * does not need as many partitions as the source topic.
+     * Each input topic has its own dead letter topic, so a rejected operator
+     * report is not mixed with rejected detections. Partition -1 lets Kafka
+     * choose the partition, so the dead letter topic does not need as many
+     * partitions as the source topic.
      */
     static TopicPartition deadLetterDestination(
             ConsumerRecord<?, ?> record,
             Exception exception) {
 
-        return new TopicPartition(KafkaTopics.EMERGENCY_EVENTS_DLT, -1);
+        String topic = KafkaTopics.EMERGENCY_EVENTS_MANUAL.equals(record.topic())
+                ? KafkaTopics.EMERGENCY_EVENTS_MANUAL_DLT
+                : KafkaTopics.EMERGENCY_EVENTS_DLT;
+        return new TopicPartition(topic, -1);
     }
 
     /** Type and message of the deepest cause, which is the original error. */

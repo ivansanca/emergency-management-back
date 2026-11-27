@@ -3,6 +3,7 @@ package com.emergencias.emergency_management.integration;
 import com.emergencias.emergency_management.messaging.config.KafkaTopics;
 import com.emergencias.emergency_management.messaging.event.IncidentEvent;
 import com.emergencias.emergency_management.messaging.producer.IncidentProducer;
+import com.emergencias.emergency_management.model.IncidentSource;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.junit.jupiter.api.AfterEach;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.testcontainers.kafka.KafkaContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -17,15 +19,18 @@ import tools.jackson.databind.json.JsonMapper;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * End to end: an event published to {@code emergency-events} is registered in
- * Neo4j and notified on the output topics, or ends up in the dead letter
- * topic when it is not valid.
+ * End to end: an event is registered in Neo4j and notified on the output
+ * topics, or ends up in the dead letter topic of its input topic when it is
+ * not valid. Operator reports go through {@code IncidentProducer} to
+ * {@code emergency-events-manual}; automatic detections are written straight
+ * to {@code emergency-events}, as the sensor service does.
  */
 @IntegrationTest
 class IncidentFlowIntegrationTest {
@@ -42,6 +47,9 @@ class IncidentFlowIntegrationTest {
     @Autowired
     private JsonMapper jsonMapper;
 
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
+
     private TestGraph graph;
     private TopicReader reader;
 
@@ -52,7 +60,8 @@ class IncidentFlowIntegrationTest {
         reader = new TopicReader(kafka.getBootstrapServers(),
                 KafkaTopics.INCIDENT_CREATED,
                 KafkaTopics.INCIDENT_RECOMMENDATION,
-                KafkaTopics.EMERGENCY_EVENTS_DLT);
+                KafkaTopics.EMERGENCY_EVENTS_DLT,
+                KafkaTopics.EMERGENCY_EVENTS_MANUAL_DLT);
     }
 
     @AfterEach
@@ -76,6 +85,26 @@ class IncidentFlowIntegrationTest {
                 .zoneCode(zoneCode)
                 .description("Integration test")
                 .build());
+    }
+
+    private void publishAutomatic(String id, String zoneCode) throws Exception {
+        IncidentEvent event = IncidentEvent.builder()
+                .id(id)
+                .type("FOREST_FIRE")
+                .severity(2)
+                .zoneCode(zoneCode)
+                .source(IncidentSource.FIRMS)
+                .description("Integration test")
+                .build();
+
+        kafkaTemplate.send(KafkaTopics.EMERGENCY_EVENTS, id,
+                jsonMapper.writeValueAsString(event)).get(10, TimeUnit.SECONDS);
+    }
+
+    private static String originalTopic(ConsumerRecord<String, String> record) {
+        Header header = record.headers().lastHeader("kafka_dlt-original-topic");
+        assertNotNull(header);
+        return new String(header.value(), StandardCharsets.UTF_8);
     }
 
     private JsonNode json(ConsumerRecord<String, String> record) {
@@ -129,7 +158,7 @@ class IncidentFlowIntegrationTest {
 
         publish(id, TestGraph.ORIGIN_ZONE, 4);
 
-        reader.awaitFirst(KafkaTopics.EMERGENCY_EVENTS_DLT, id);
+        reader.awaitFirst(KafkaTopics.EMERGENCY_EVENTS_MANUAL_DLT, id);
         assertEquals(0, graph.count(
                 "MATCH (i:Incident {id: $id}) RETURN count(i)",
                 Map.of("id", id)));
@@ -142,14 +171,34 @@ class IncidentFlowIntegrationTest {
         publish(id, "99999");
 
         ConsumerRecord<String, String> rejected =
-                reader.awaitFirst(KafkaTopics.EMERGENCY_EVENTS_DLT, id);
-        Header originalTopic =
-                rejected.headers().lastHeader("kafka_dlt-original-topic");
-        assertNotNull(originalTopic);
-        assertEquals(KafkaTopics.EMERGENCY_EVENTS,
-                new String(originalTopic.value(), StandardCharsets.UTF_8));
+                reader.awaitFirst(KafkaTopics.EMERGENCY_EVENTS_MANUAL_DLT, id);
+        assertEquals(KafkaTopics.EMERGENCY_EVENTS_MANUAL, originalTopic(rejected));
         assertEquals(0, graph.count(
                 "MATCH (i:Incident {id: $id}) RETURN count(i)",
                 Map.of("id", id)));
+    }
+
+    @Test
+    void automaticEventIsRegisteredAndNotified() throws Exception {
+        String id = newId();
+
+        publishAutomatic(id, TestGraph.ORIGIN_ZONE);
+
+        reader.awaitFirst(KafkaTopics.INCIDENT_CREATED, id);
+        assertEquals(1, graph.count(
+                "MATCH (i:Incident {id: $id}) RETURN count(i)",
+                Map.of("id", id)));
+    }
+
+    @Test
+    void invalidAutomaticEventEndsUpInItsOwnDeadLetterTopic() throws Exception {
+        String id = newId();
+
+        publishAutomatic(id, "99999");
+
+        ConsumerRecord<String, String> rejected =
+                reader.awaitFirst(KafkaTopics.EMERGENCY_EVENTS_DLT, id);
+        assertEquals(KafkaTopics.EMERGENCY_EVENTS, originalTopic(rejected));
+        assertTrue(reader.recordsFor(KafkaTopics.EMERGENCY_EVENTS_MANUAL_DLT, id).isEmpty());
     }
 }
